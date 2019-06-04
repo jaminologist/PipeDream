@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://entities/explosion/giblet.gd" type="Script" id=1]
+[ext_resource path="res://entities/explosion/assets/block_0.png" type="Texture" id=2]
+[ext_resource path="res://entities/explosion/Sprite.gd" type="Script" id=3]
+
+[node name="Giblet" type="Node2D"]
+position = Vector2( 250, 340 )
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_group_": true
+}
+speed = 10.0
+angleInDegrees = 240.0
+
+[node name="Sprite" type="Sprite" parent="."]
+texture = ExtResource( 2 )
+script = ExtResource( 3 )
+
+[node name="Tween" type="Tween" parent="."]
