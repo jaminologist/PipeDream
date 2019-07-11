@@ -3,6 +3,8 @@ extends Node2D
 #Grid variables
 export (int) var width
 export (int) var height
+export (int) var column
+export (int) var row
 export (int) var x_position
 export (int) var y_position
 export (float) var cell_size
@@ -48,7 +50,7 @@ var all_pieces = []
 # Called when the node enters the scene tree for the first time.
 func _ready():
     randomize()
-    all_pieces = create_new_pipe_grid()
+    all_pieces = create_new_pipe_grid(column, row)
     var connections = pipe_pass(all_pieces)
     
     print(connections.size())
@@ -106,21 +108,21 @@ func add_pipe_to_grid(x: int, y:int, pipe, pipe_grid):
     pipe.speed = pipe_fall_speed
     return pipe
     
-func create_new_pipe_grid():
-    var twoDArray = make_2d_array()
+func create_new_pipe_grid(column: int, row :int):
+    var twoDArray = make_2d_array(column, row)
     
-    for i in width:
-        for j in height:
+    for i in column:
+        for j in row:
             twoDArray[i][j] = generate_new_pipe(i, j, twoDArray)
             
     return twoDArray
             
 
-func make_2d_array(): 
+func make_2d_array(column: int, row: int): 
     var array = []
-    for i in width:
+    for i in column:
         array.append([])
-        for j in height:
+        for j in row:
             array[i].append(null)
     return array
         

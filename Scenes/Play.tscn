@@ -30,8 +30,10 @@ rect_scale = Vector2( 1.5, 1.5 )
 color = Color( 0, 0, 0, 1 )
 
 [node name="Grid" parent="." instance=ExtResource( 2 )]
-position = Vector2( 50, 177 )
-x_position = 30
+position = Vector2( 25, 300 )
+column = 7
+row = 8
+cell_size = 52.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 anchor_right = 1.0
@@ -94,7 +96,6 @@ valign = 1
 [node name="Score_Number_Label" parent="VBoxContainer/VBoxContainer3/VBoxScoreContainer" instance=ExtResource( 4 )]
 
 [node name="VictoryCenterContainer" type="CenterContainer" parent="."]
-editor/display_folded = true
 anchor_right = 1.0
 anchor_bottom = 1.0
 

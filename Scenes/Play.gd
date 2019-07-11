@@ -8,6 +8,9 @@ func _ready():
     get_node("BlitzTimer").start()
     get_node("VictoryCenterContainer").hide()
     update_time_counter_text()
+    
+    $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
+    $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
     pass 
     
 func _process(delta):
