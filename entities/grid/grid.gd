@@ -1,8 +1,6 @@
 extends Node2D
 
 #Grid variables
-export (int) var width
-export (int) var height
 export (int) var column
 export (int) var row
 export (int) var x_position
@@ -23,26 +21,19 @@ signal pipes_destroyed(number)
 signal explosive_pipe_destroyed(power, time)
 signal connection_found 
 
-var pipe_l = preload("res://entities/pipes/pipe_l.tscn")
-var pipe_line = preload("res://entities/pipes/Pipe.tscn")
-var pine_end =  preload("res://entities/pipes/pipe_end.tscn")
-
-var pine_end_explosion_2 =  preload("res://entities/pipes/pipe_end_explosion_2.tscn")
-var pine_end_explosion_3 =  preload("res://entities/pipes/pipe_end_explosion_3.tscn")
+var pipe_preload = preload("res://entities/pipes/pipe.tscn")
 
 var pipe_moving_count = 0
 
 var possible_pieces = [
-   pipe_l,
-   pipe_line,
-   pine_end,
-   #pine_end_explosion_2
+    PipeType.L_PIPE,
+    PipeType.LINE,
+    PipeType.END
 ]
 
 var corner_pieces = [
-   pipe_l,
-  # pipe_line,
-   pine_end
+   PipeType.L_PIPE,
+   PipeType.END
 ]
 
 var all_pieces = []
@@ -50,10 +41,9 @@ var all_pieces = []
 # Called when the node enters the scene tree for the first time.
 func _ready():
     randomize()
+    
     all_pieces = create_new_pipe_grid(column, row)
     var connections = pipe_pass(all_pieces)
-    
-    print(connections.size())
     
     #This code looks to make sure there are no connections when the game first begins.
     for i in range(0, connections.size()):
@@ -89,10 +79,10 @@ func generate_new_pipe(x: int, y:int, pipe_grid):
     
     if x == 0 || x == pipe_grid.size() - 1:
         rand = floor(rand_range(0, corner_pieces.size()))
-        pipe = corner_pieces[rand].instance()
+        pipe = get_new_pipe_instance(corner_pieces[rand])
     else:
         rand = floor(rand_range(0, possible_pieces.size()))
-        pipe = possible_pieces[rand].instance()
+        pipe = get_new_pipe_instance(possible_pieces[rand])
         
     add_child(pipe)
     add_pipe_to_grid(x, y, pipe, pipe_grid)
@@ -221,6 +211,12 @@ func pipe_pass(pipe_grid: Array):
                         node.pipe.get_node("Sprite").modulate = get_color_of_pipe_based_on_connection_size(connectionSize)
     return closedConnections
     
+func get_new_pipe_instance(pipeType: int):
+    var pipe = pipe_preload.instance()
+    pipe.init(pipeType)
+    return pipe
+    
+    
 func add_new_pipes_based_on_closed_connections(closedConnections: Array, pipeGrid):
     
     var newly_created_pipes = []
@@ -232,10 +228,10 @@ func add_new_pipes_based_on_closed_connections(closedConnections: Array, pipeGri
         var rootNode = closedConnections[0] as PipeNode
         var connectionSize = rootNode.size()
         if connectionSize >= maximum_connection_size:
-            newly_created_pipes.append(pine_end_explosion_3.instance())
+            newly_created_pipes.append(get_new_pipe_instance(PipeType.END_EXPLOSION_3))
             newly_created_pipes_positions.append(rootNode.position)
         elif connectionSize >= medium_connection_size:
-            newly_created_pipes.append(pine_end_explosion_2.instance())
+            newly_created_pipes.append(get_new_pipe_instance(PipeType.END_EXPLOSION_2))
             newly_created_pipes_positions.append(rootNode.position)
         
     for i in range(0, newly_created_pipes.size()):
@@ -297,13 +293,13 @@ func remove(x: int, y: int, grid):
     pos.x += cell_size / 2
     pos.y += cell_size / 2
     
-    if pipe.get_filename() == pine_end_explosion_3.get_path():
+    if pipe.type == PipeType.END_EXPLOSION_3:
         $GibletFactory.numberOfGiblets = 24
         $GibletFactory.create_explosion(pos.x, pos.y)
         emit_signal("explosive_pipe_destroyed", 6, 2)
         for position in positionsInSquareRange(pixel_to_grid(pipe.position.x, pipe.position.y), 3):
             remove(position.x, position.y, grid)
-    elif pipe.get_filename() == pine_end_explosion_2.get_path():
+    elif  pipe.type == PipeType.END_EXPLOSION_2:
         $GibletFactory.numberOfGiblets = 12
         $GibletFactory.create_explosion(pos.x, pos.y)
         emit_signal("explosive_pipe_destroyed", 6, 2)
@@ -355,6 +351,8 @@ func _on_pipe_stop():
         if !hasConnection :
             self.set_process(true)  
         
+func convert_to_json():
+    print("ok")
     
     
                 

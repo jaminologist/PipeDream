@@ -6,13 +6,30 @@ var state = State.CONNECTING
 
 var client = WebSocketClient.new()
 
+var is_ai = true
+
+var score:int = 0
+var enemyscore: int = 0
+var time_limit = 90
+
+
 func _ready():
-    client.connect_to_url("ws://165.22.120.163:5080/connectToServer")
-    client.connect("connection_error", self, "_on_connection_error")
+    
+    if !is_ai:
+        client.connect_to_url("ws://165.22.120.163:5080/connectToServer")
+        client.connect("connection_error", self, "_on_connection_error")
+        get_node("Grid").set_process(false)
+        get_node("Grid").set_process_input(false)
+    else:
+        state = State.PLAYING
+    
     get_node("VictoryCenterContainer").hide()
-    get_node("Grid").set_process(false)
-    get_node("Grid").set_process_input(false)
-    pass # Replace with function body.
+    
+    #Centers Grid
+    $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
+    $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
+    
+    pass 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -21,7 +38,13 @@ func _process(delta):
         client.disconnect_from_host()
         get_tree().change_scene("res://Scenes/MainMenu.tscn")
     
-    
+    if !is_ai:
+        poll_client_and_update()
+
+            
+    pass
+
+func poll_client_and_update():
     client.poll()
     var bytes = client.get_peer(1).get_packet()
     var dictionary = {}
@@ -43,16 +66,7 @@ func _process(delta):
         elif a.has("score"):
             update_enemy_score_text(a["score"])
             enemyscore = a["score"]
-            
-            
-          
     
-    #print(a)    
-    pass
-    
-var score:int = 0
-var enemyscore: int = 0
-var time_limit = 90
     
 func update_time_counter_text():
     var time_limit_in_seconds = float(time_limit) / 1000000000
@@ -85,7 +99,7 @@ func _on_Grid_pipes_destroyed(number):
     get_node("VBoxContainer/VBoxContainer3/VBoxScoreContainer/Score_Number_Label").set_score(score)
     
     var dictionaryToSendToOtherPlayer = {"score": score}
-    client.get_peer(1).put_packet(JSON.print(dictionaryToSendToOtherPlayer).to_ascii())
+    #client.get_peer(1).put_packet(JSON.print(dictionaryToSendToOtherPlayer).to_ascii())
     
 
 func _on_BlitzTimer_timeout():

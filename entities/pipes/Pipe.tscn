@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://entities/pipes/Pipe.gd" type="Script" id=1]
+[ext_resource path="res://entities/pipes/pipe.gd" type="Script" id=1]
 [ext_resource path="res://entities/pipes/assets/pipe_line_0.png" type="Texture" id=2]
 
 [node name="Pipe" type="Node2D"]
