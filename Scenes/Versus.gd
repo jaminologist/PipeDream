@@ -12,6 +12,13 @@ var score:int = 0
 var enemyscore: int = 0
 var time_limit = 90
 
+var charge:int = 0
+var charge_increment = 1
+var charge_increment_count = 0
+var charge_increment_max_count = 10
+
+var charge_increment_timer
+
 
 func _ready():
     
@@ -22,6 +29,12 @@ func _ready():
         get_node("Grid").set_process_input(false)
     else:
         state = State.PLAYING
+        
+        var charge_increment_timer = Timer.new()
+        charge_increment_timer.connect("timeout", self, "increment_charge_offline")
+        charge_increment_timer.set_wait_time(1)
+        charge_increment_timer.start()
+        self.add_child(charge_increment_timer)
     
     get_node("VictoryCenterContainer").hide()
     
@@ -40,6 +53,8 @@ func _process(delta):
     
     if !is_ai:
         poll_client_and_update()
+        
+    
 
             
     pass
@@ -66,6 +81,8 @@ func poll_client_and_update():
         elif a.has("score"):
             update_enemy_score_text(a["score"])
             enemyscore = a["score"]
+            
+#func update():
     
     
 func update_time_counter_text():
@@ -83,6 +100,28 @@ func update_enemy_score_text(score):
     $VBoxContainer/VBoxContainer3/VBoxEnemyContainer/Enemy_Score_Number_Label.set_score(int(score))
     
     
+func increment_charge_offline():
+    
+    print("HI")
+    
+    charge += charge_increment
+    charge_increment_count+=1
+    
+    if charge_increment_count >= charge_increment_max_count:
+        charge_increment+=1
+        charge_increment_count = 0
+    
+    if charge >= 100:
+        charge = 100
+        open_score_screen()
+        
+    $VBoxContainer/VBoxContainer3/VBoxScoreContainer/Charge_Number_Label.text = str(charge) + "%"
+        
+        
+    
+    
+    
+    
 func open_score_screen():
     $Grid.set_process(false)
     $VictoryCenterContainer.show()
@@ -95,8 +134,16 @@ func open_score_screen():
         
     
 func _on_Grid_pipes_destroyed(number):
-    score += (1000 * number) + (250 * number) 
-    get_node("VBoxContainer/VBoxContainer3/VBoxScoreContainer/Score_Number_Label").set_score(score)
+    
+    charge -= number
+    
+    if charge < 0:
+        charge = 0
+        
+    $VBoxContainer/VBoxContainer3/VBoxScoreContainer/Charge_Number_Label.text = str(charge) + "%"
+    
+    #score += (1000 * number) + (250 * number) 
+    #get_node("VBoxContainer/VBoxContainer3/VBoxScoreContainer/Score_Number_Label").set_score(score)
     
     var dictionaryToSendToOtherPlayer = {"score": score}
     #client.get_peer(1).put_packet(JSON.print(dictionaryToSendToOtherPlayer).to_ascii())

@@ -1,0 +1,41 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://assets/fonts/Roboto-Black.tres" type="DynamicFont" id=1]
+[ext_resource path="res://assets/images/tobepacked/border_clear_0.png" type="Texture" id=2]
+
+[node name="EnemyBoardCenterContainer" type="CenterContainer"]
+margin_left = 200.0
+margin_right = 275.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 75, 75 )
+
+[node name="Label" type="Label" parent="."]
+margin_left = 18.0
+margin_top = 17.0
+margin_right = 57.0
+margin_bottom = 58.0
+custom_fonts/font = ExtResource( 1 )
+text = "0%"
+align = 1
+valign = 1
+
+[node name="ColorRect" type="ColorRect" parent="."]
+margin_right = 75.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 75, 75 )
+color = Color( 0.976471, 0.533333, 0.533333, 0.254902 )
+
+[node name="TextureRect" type="TextureRect" parent="."]
+margin_right = 75.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 75, 75 )
+
+[node name="NinePatchRect" type="NinePatchRect" parent="."]
+margin_right = 75.0
+margin_bottom = 75.0
+rect_min_size = Vector2( 75, 75 )
+texture = ExtResource( 2 )
+patch_margin_left = 25
+patch_margin_top = 25
+patch_margin_right = 25
+patch_margin_bottom = 25
