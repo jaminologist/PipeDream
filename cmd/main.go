@@ -12,6 +12,7 @@ func main() {
 	fmt.Println("Listening on 5080...")
 	server := multiplayer.NewServer()
 	http.HandleFunc("/connectToServer", server.HandleNewConnection)
+	http.HandleFunc("/singlePlayerBlitzGame", server.CreateSinglePlayerSession)
 	go server.Run()
 	//Test git webhook
 	log.Fatal(http.ListenAndServe(":5080", nil))

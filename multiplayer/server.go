@@ -10,6 +10,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const serverTick time.Duration = time.Duration(600) * time.Millisecond
+
 //Server manages the number of active Lobbies
 type Server struct {
 	lobbyMap     map[*Lobby]bool
@@ -17,6 +19,10 @@ type Server struct {
 
 	// Register
 	register chan *Player
+
+	singlePlayerRegister chan *Player
+
+	unregister chan *Player
 
 	playersLookingForLobby []*Player
 	playersInLobby         map[*Player]bool
@@ -28,12 +34,46 @@ func NewServer() *Server {
 		lobbyMap:               make(map[*Lobby]bool),
 		emptyLobbies:           make([]*Lobby, 0),
 		register:               make(chan *Player),
+		singlePlayerRegister:   make(chan *Player),
+		unregister:             make(chan *Player),
 		playersLookingForLobby: make([]*Player, 0),
 		playersInLobby:         make(map[*Player]bool),
 	}
 
 }
 
+//HandleNewConnection Creates a new WebSocket Connection with the Multiplayer server and Registers the player with the server
+func (s *Server) HandleNewConnection(w http.ResponseWriter, r *http.Request) {
+
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	newPlayer := newPlayer(conn)
+	s.register <- newPlayer
+}
+
+//CreateSinglePlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for a singleplayer session
+func (s *Server) CreateSinglePlayerSession(w http.ResponseWriter, r *http.Request) {
+
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	newPlayer := newPlayer(conn)
+	s.singlePlayerRegister <- newPlayer
+	fmt.Println("yo")
+}
+
+//Run starts the Server. The server handles putting players into lobbies and starting their games
 func (s *Server) Run() {
 
 	for {
@@ -41,6 +81,10 @@ func (s *Server) Run() {
 		select {
 		case newPlayer := <-s.register:
 			s.playersLookingForLobby = append(s.playersLookingForLobby, newPlayer)
+		case newSinglePlayer := <-s.singlePlayerRegister:
+			var singlePlayerLobby = NewSinglePlayerLobby()
+			singlePlayerLobby.AddPlayer(newSinglePlayer)
+			singlePlayerLobby.Run()
 		}
 
 		if len(s.playersLookingForLobby) > 0 {
@@ -87,6 +131,86 @@ type Lobby struct {
 	game *Game
 }
 
+type SinglePlayerLobby struct {
+	player *Player
+
+	game *SinglePlayerBlitzGame
+
+	register   chan *Player
+	unregister chan *Player
+
+	playerMessageChannel chan *MessageFromPlayer
+
+	boardcastAll chan *Message
+}
+
+func NewSinglePlayerLobby() *SinglePlayerLobby {
+
+	return &SinglePlayerLobby{
+		player:               nil,
+		register:             make(chan *Player),
+		unregister:           make(chan *Player),
+		playerMessageChannel: make(chan *MessageFromPlayer),
+		boardcastAll:         make(chan *Message),
+	}
+
+}
+
+func (lobby *SinglePlayerLobby) AddPlayer(p *Player) bool {
+
+	if lobby.player == nil {
+		lobby.player = p
+		return true
+	}
+	return false
+}
+
+func (lobby *SinglePlayerLobby) Unregister(player *Player) {
+	lobby.unregister <- player
+}
+
+func (lobby *SinglePlayerLobby) SendMessage(message *MessageFromPlayer) {
+	select {
+	case lobby.playerMessageChannel <- message:
+	}
+}
+
+func (l *SinglePlayerLobby) Run() {
+
+	go func() {
+		l.boardcastAll <- &Message{
+			messageType: websocket.TextMessage,
+			message:     []byte("found_lobby"),
+		}
+
+		l.game = NewSinglePlayerBlitzGame(l, 90*time.Second)
+		go l.game.Run()
+	}()
+
+OuterLoop:
+	for {
+		select {
+
+		case player := <-l.unregister:
+			if player == l.player {
+				break OuterLoop
+			}
+
+		case messageFromPlayer := <-l.playerMessageChannel:
+			//TODO
+			_ = messageFromPlayer
+		case message := <-l.boardcastAll:
+			if err := l.player.conn.WriteMessage(message.messageType, message.message); err != nil {
+				log.Println(err)
+				return
+			}
+		}
+	}
+
+	fmt.Println("Lobby Closed")
+
+}
+
 type Game struct {
 	lobby     *Lobby
 	timeLimit time.Duration
@@ -111,12 +235,10 @@ func NewGame(l *Lobby, timeLimit time.Duration) *Game {
 
 }
 
-const tick time.Duration = time.Duration(600) * time.Millisecond
-
 func (g *Game) Run() {
 
 	for {
-		g.timeLimit = g.timeLimit - tick
+		g.timeLimit = g.timeLimit - serverTick
 		isOver := g.timeLimit <= 0
 		messageBytes, err := json.Marshal(&GameState{Time: g.timeLimit, IsOver: isOver})
 
@@ -130,7 +252,59 @@ func (g *Game) Run() {
 			break
 		}
 
-		time.Sleep(tick)
+		time.Sleep(serverTick)
+	}
+
+}
+
+type SinglePlayerBlitzGame struct {
+	singlePlayerLobby *SinglePlayerLobby
+	board             *Board
+	timeLimit         time.Duration
+}
+
+func NewSinglePlayerBlitzGame(spl *SinglePlayerLobby, timeLimit time.Duration) *SinglePlayerBlitzGame {
+
+	board := NewBoard(7, 8)
+
+	return &SinglePlayerBlitzGame{
+		singlePlayerLobby: spl,
+		timeLimit:         timeLimit,
+		board:             &board,
+	}
+
+}
+
+type SinglePlayerBlitzGameState struct {
+	Board  *Board
+	Score int
+	Time   time.Duration
+	IsOver bool
+}
+
+func (g *SinglePlayerBlitzGame) Run() {
+
+	for {
+		g.timeLimit = g.timeLimit - serverTick
+		isOver := g.timeLimit <= 0
+		messageBytes, err := json.Marshal(&SinglePlayerBlitzGameState{
+			Board: g.board,
+			Score: 100,
+			Time: g.timeLimit, 
+			IsOver: isOver,
+		})
+
+		if err != nil {
+			log.Println(err)
+		} else {
+			g.singlePlayerLobby.boardcastAll <- &Message{messageType: websocket.TextMessage, message: messageBytes}
+		}
+
+		if isOver {
+			break
+		}
+
+		time.Sleep(serverTick)
 	}
 
 }
@@ -158,47 +332,30 @@ func NewLobby() *Lobby {
 
 }
 
-func (s *Server) HandleNewConnection(w http.ResponseWriter, r *http.Request) {
+func (lobby *Lobby) AddPlayer(p *Player) bool {
 
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	fmt.Println("Addplayer len is:", len(lobby.players))
 
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	newPlayer := newPlayer(conn)
-	s.register <- newPlayer
-}
-
-func (lobby *Lobby) JoinLobby(w http.ResponseWriter, r *http.Request) {
-
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	newPlayer := newPlayer(conn)
-	lobby.register <- newPlayer
-}
-
-func (l *Lobby) AddPlayer(p *Player) bool {
-
-	fmt.Println("Addplayer len is:", len(l.players))
-
-	if len(l.players) < 2 {
-		l.players[p] = true
-		p.lobby = l
+	if len(lobby.players) < 2 {
+		lobby.players[p] = true
+		p.PlayerRegister = lobby
+		p.PlayerMessageReceiver = lobby
 		go p.run()
 		return true
 	}
 
 	return false
 
+}
+
+func (lobby *Lobby) Unregister(player *Player) {
+	lobby.unregister <- player
+}
+
+func (lobby *Lobby) SendMessage(message *MessageFromPlayer) {
+	select {
+	case lobby.boardcast <- message:
+	}
 }
 
 func (l *Lobby) Run() {
@@ -265,6 +422,7 @@ OuterLoop:
 				}
 			}
 		}
+
 	}
 
 	fmt.Println("Lobby Closed")

@@ -8,12 +8,21 @@ type Player struct {
 	score int
 	conn  Conn
 
-	lobby *Lobby
+	PlayerRegister
+	PlayerMessageReceiver
 }
 
 type Conn interface {
 	ReadMessage() (messageType int, p []byte, err error)
 	WriteMessage(messageType int, data []byte) error
+}
+
+type PlayerRegister interface {
+	Unregister(player *Player)
+}
+
+type PlayerMessageReceiver interface {
+	SendMessage(message *MessageFromPlayer)
 }
 
 func newPlayer(conn Conn) *Player {
@@ -26,21 +35,27 @@ func newPlayer(conn Conn) *Player {
 func (p *Player) run() {
 
 	for {
-		fmt.Println("running")
 		messageType, message, err := p.conn.ReadMessage()
 		if err != nil {
 			fmt.Println("err?")
-			p.lobby.unregister <- p
+
+			p.Unregister(p)
 			return
 		}
-		fmt.Println("running2")
-		select {
+
+		p.SendMessage(&MessageFromPlayer{
+			messageType: messageType,
+			message:     message,
+			player:      p,
+		})
+
+		/*select {
 		case p.lobby.boardcast <- &MessageFromPlayer{
 			messageType: messageType,
 			message:     message,
 			player:      p,
 		}:
-		}
+		}*/
 	}
 
 }
