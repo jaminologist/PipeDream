@@ -15,9 +15,21 @@ var time_limit = 90
 var charge:int = 0
 var charge_increment = 1
 var charge_increment_count = 0
-var charge_increment_max_count = 10
+var charge_increment_max_count = 25
 
 var charge_increment_timer
+
+
+var enemy_board_list = []
+var selected_enemy_board
+
+class ChargeHandler:
+    var charge:int = 0
+    var charge_increment = 1
+    var charge_increment_count = 0
+    var charge_increment_max_count = 25
+
+
 
 
 func _ready():
@@ -42,6 +54,18 @@ func _ready():
     $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
     $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
     
+    enemy_board_list = [
+        $VBoxContainer/EnemyBoardContainer/EnemyBoardCenterContainer,
+        $VBoxContainer/EnemyBoardContainer/EnemyBoardCenterContainer2,
+        $VBoxContainer/EnemyBoardContainer/EnemyBoardCenterContainer3,
+        $VBoxContainer/EnemyBoardContainer/EnemyBoardCenterContainer4
+    ]
+    
+    for i in range(0, enemy_board_list.size()):
+        enemy_board_list[i].connect("enemy_board_clicked", self, "_on_enemy_board_clicked")
+        enemy_board_list[i].set_id(i)
+        
+
     pass 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -101,8 +125,6 @@ func update_enemy_score_text(score):
     
     
 func increment_charge_offline():
-    
-    print("HI")
     
     charge += charge_increment
     charge_increment_count+=1
@@ -168,6 +190,17 @@ func _on_MainMenuButton_pressed():
 func _on_Grid_explosive_pipe_destroyed(power, time):
     $CameraShake2D.start_camera_shake(power, 0.25)
 
+
+func _on_enemy_board_clicked(enemy_board):
+    
+    if selected_enemy_board != null:
+        selected_enemy_board.unselect()
+    
+    selected_enemy_board = enemy_board
+    
+    enemy_board.select()
+    
+    pass
 
 
 func _on_connection_error():

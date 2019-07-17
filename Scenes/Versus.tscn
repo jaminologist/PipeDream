@@ -125,28 +125,22 @@ custom_constants/separation = 10
 alignment = 1
 
 [node name="EnemyBoardCenterContainer" parent="VBoxContainer/EnemyBoardContainer" instance=ExtResource( 5 )]
-margin_left = 70.0
-margin_right = 145.0
+margin_left = 75.0
+margin_right = 150.0
 
 [node name="EnemyBoardCenterContainer4" parent="VBoxContainer/EnemyBoardContainer" instance=ExtResource( 5 )]
-margin_left = 155.0
-margin_right = 230.0
+margin_left = 160.0
+margin_right = 235.0
 
 [node name="EnemyBoardCenterContainer2" parent="VBoxContainer/EnemyBoardContainer" instance=ExtResource( 5 )]
-margin_left = 240.0
-margin_right = 315.0
+margin_left = 245.0
+margin_right = 320.0
 
 [node name="EnemyBoardCenterContainer3" parent="VBoxContainer/EnemyBoardContainer" instance=ExtResource( 5 )]
-margin_left = 325.0
-margin_right = 400.0
-
-[node name="EnemyBoard" type="Control" parent="VBoxContainer/EnemyBoardContainer"]
-margin_left = 410.0
-margin_right = 410.0
-margin_bottom = 75.0
+margin_left = 330.0
+margin_right = 405.0
 
 [node name="VictoryCenterContainer" type="CenterContainer" parent="."]
-editor/display_folded = true
 visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
