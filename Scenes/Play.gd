@@ -8,7 +8,7 @@ var client = WebSocketClient.new()
 func _ready():
     get_node("BlitzTimer").start()
     get_node("VictoryCenterContainer").hide()
-    update_time_counter_text()
+    update_time_counter_text(90)
     
     client.connect_to_url("ws://localhost:5080/singlePlayerBlitzGame")
     print(client.get_connection_status())
@@ -36,16 +36,23 @@ func poll_client_and_update():
     
     if json != null:
         json as Dictionary
-        
+        update_time_counter_text(json.get("Time"))
         $Grid.load_board_into_grid(json.get("Board"))
     
-func update_time_counter_text():
-    var minutes = time_limit / 60
-    var seconds = time_limit % 60
+#func update_time_counter_text():
+#    var minutes = time_limit / 60
+#    var seconds = time_limit % 60
+#    var str_elapsed = "%2d:%02d" % [minutes, seconds]
+#    
+#    get_node("VBoxContainer/VBoxContainer3/VBoxTimeContainer/Time_Counter").text = str_elapsed
+
+func update_time_counter_text(time_limit):
+    var time_limit_in_seconds = float(time_limit) / 1000000000
+    var minutes = time_limit_in_seconds / 60
+    var seconds = fmod(time_limit_in_seconds, 60)
     var str_elapsed = "%2d:%02d" % [minutes, seconds]
     
     get_node("VBoxContainer/VBoxContainer3/VBoxTimeContainer/Time_Counter").text = str_elapsed
-    
     
 func open_score_screen():
     $Grid.set_process(false)
@@ -63,7 +70,7 @@ func _on_BlitzTimer_timeout():
         $BlitzTimer.stop()
         open_score_screen()
         time_limit = 0
-    update_time_counter_text()
+    #update_time_counter_text(90)
 
 
 func _on_RetryButton_pressed():
@@ -80,3 +87,11 @@ func _on_connection_error():
     print("here")
     get_tree().change_scene("res://Scenes/MainMenu.tscn")
     pass
+
+
+func _on_Grid_pipe_touch(x:int, y:int):
+    
+    var inputDictionary = {"x": x, "y": y}
+    client.get_peer(1).put_packet(JSON.print(inputDictionary).to_ascii())
+    
+    pass # Replace with function body.
