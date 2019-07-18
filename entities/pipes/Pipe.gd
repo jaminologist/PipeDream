@@ -25,7 +25,20 @@ func _ready():
     
 func init(type :int):
     self.type = type
+    set_texture_using_type(type)
     
+func get_type():
+    return type
+    
+func get_direction():
+    return direction
+
+func move_to(destination: Vector2):
+    is_moving = true
+    emit_signal("pipe_moving")
+    self.destination = destination 
+    
+func set_texture_using_type(type: int):
     var texture 
     
     match type:
@@ -40,23 +53,8 @@ func init(type :int):
         PipeType.L_PIPE: 
             texture = pipe_l_texture
     
-    print(type)
-    
     get_node("Sprite").set_texture(texture)
     
-    
-    
-    
-func get_type():
-    return type
-    
-func get_direction():
-    return direction
-
-func move_to(destination: Vector2):
-    is_moving = true
-    emit_signal("pipe_moving")
-    self.destination = destination 
     
 func set_direction(direction):
     self.direction = direction

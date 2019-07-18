@@ -98,6 +98,20 @@ func add_pipe_to_grid(x: int, y:int, pipe, pipe_grid):
     pipe.speed = pipe_fall_speed
     return pipe
     
+    
+func load_board_into_grid(board:Dictionary):
+    var cells:Array = board.get("Cells")
+    
+    for x in range(0, cells.size()):
+        for y in range(0, cells[x].size()):
+            var cell:Dictionary = cells[x][y]
+            var pipe = all_pieces[x][y]
+            pipe.set_texture_using_type(cell.get("Type", 2))
+            pipe.set_direction(cell.get("Direction", 0))
+                
+    
+    
+    
 func create_new_pipe_grid(column: int, row :int):
     var twoDArray = make_2d_array(column, row)
     
@@ -152,10 +166,10 @@ func on_mouse_click():
         var mouse_grid_position = pixel_to_grid(mouse_local_position.x, mouse_local_position.y)
         
         if contains(mouse_grid_position.x, mouse_grid_position.y, all_pieces):   
-            all_pieces[mouse_grid_position.x][mouse_grid_position.y].rotate_pipe()
-            emit_signal("pipe_touch")
-            if full_grid_pipe_pass_sequence(all_pieces):
-                emit_signal("connection_found")
+            #all_pieces[mouse_grid_position.x][mouse_grid_position.y].rotate_pipe()
+            emit_signal("pipe_touch", mouse_grid_position.x, mouse_grid_position.y)
+            #if full_grid_pipe_pass_sequence(all_pieces):
+                #emit_signal("connection_found")
  
 
 func point_is_empty(x: int, y: int, pipe_grid):
