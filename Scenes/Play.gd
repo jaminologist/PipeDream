@@ -13,10 +13,6 @@ func _ready():
     client.connect_to_url("ws://localhost:5080/singlePlayerBlitzGame")
     print(client.get_connection_status())
     client.connect("connection_failed", self, "_on_connection_error")
-    
-    #Centers Grid
-    $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
-    $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
     pass 
     
 func _process(delta):
@@ -36,8 +32,18 @@ func poll_client_and_update():
     
     if json != null:
         json as Dictionary
-        update_time_counter_text(json.get("Time"))
-        $Grid.load_board_into_grid(json.get("Board"))
+        
+        if json.has("Time"):
+            update_time_counter_text(json.get("Time"))
+        
+        if json.has("Board"):
+            if json.get("Board") != null:
+                var firstload = $Grid.board == null
+                $Grid.load_board_into_grid(json.get("Board"))
+                
+                if firstload:
+                    $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
+                    $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
     
 #func update_time_counter_text():
 #    var minutes = time_limit / 60

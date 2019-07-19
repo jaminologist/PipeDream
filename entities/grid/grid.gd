@@ -1,8 +1,8 @@
 extends Node2D
 
 #Grid variables
-export (int) var column
-export (int) var row
+var column
+var row
 export (int) var x_position
 export (int) var y_position
 export (float) var cell_size
@@ -36,35 +36,63 @@ var corner_pieces = [
    PipeType.END
 ]
 
-var all_pieces = []
+var board
+
+
+func load_board_into_grid(board:Dictionary):
+    var cells:Array = board.get("Cells")
+    
+    if self.board == null:
+        self.column = board.get("NumberOfColumns", 0)
+        self.row = board.get("NumberOfRows", 0)
+        self.board = make_2d_array(self.column, self.row)
+        
+        for x in column:
+            for y in row:
+                var pipe = pipe_preload.instance()
+                add_child(pipe)
+                pipe.position = grid_to_pixel(x, y)
+                pipe.set_size(cell_size,cell_size)
+                self.board[x][y] = pipe
+                    
+    for x in range(0, cells.size()):
+        for y in range(0, cells[x].size()):
+            var cell:Dictionary = cells[x][y]
+            var pipe = self.board[x][y]
+            pipe.set_texture_using_type(cell.get("Type", 2))
+            pipe.set_direction(cell.get("Direction", 0))
+            pipe.set_pipeColor(cell.get("Level", 0))
+
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
     randomize()
+    pass
     
-    all_pieces = create_new_pipe_grid(column, row)
-    var connections = pipe_pass(all_pieces)
+    #board = create_new_pipe_grid(column, row)
+    #var connections = pipe_pass(board)
     
     #This code looks to make sure there are no connections when the game first begins.
-    for i in range(0, connections.size()):
-        var rootNode = connections[i] as PipeNode
-        for node in rootNode.root_and_children():
-            var chainBroken = false
-            for j in range (0, 3):
-                node.pipe.rotate_pipe()
-                var visitedNodes = {}
-                if !create_pipe_connection(visitedNodes, all_pieces, PipeNode.new(node.pipe), node.position.x, node.position.y):
-                    chainBroken = true   
-                    break
-            if chainBroken:
-                break
+    #for i in range(0, connections.size()):
+    #    var rootNode = connections[i] as PipeNode
+    #    for node in rootNode.root_and_children():
+    #        var chainBroken = false
+    #        for j in range (0, 3):
+    #            node.pipe.rotate_pipe()
+    #            var visitedNodes = {}
+    #            if !create_pipe_connection(visitedNodes, board, PipeNode.new(node.pipe), node.position.x, node.position.y):
+    #                chainBroken = true   
+    #                break
+    #        if chainBroken:
+    #            break
     
-    connections = pipe_pass(all_pieces)
+    #connections = pipe_pass(board)
     
-    if connections.size() > 0:
-        print("Oh no, there was a conneciton, you should probably write a unit test about this")
+    #if connections.size() > 0:
+    #    print("Oh no, there was a conneciton, you should probably write a unit test about this")
     
-    #full_grid_pipe_pass_sequence(all_pieces)
+    #full_grid_pipe_pass_sequence(board)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -99,19 +127,6 @@ func add_pipe_to_grid(x: int, y:int, pipe, pipe_grid):
     return pipe
     
     
-func load_board_into_grid(board:Dictionary):
-    var cells:Array = board.get("Cells")
-    
-    for x in range(0, cells.size()):
-        for y in range(0, cells[x].size()):
-            var cell:Dictionary = cells[x][y]
-            var pipe = all_pieces[x][y]
-            pipe.set_texture_using_type(cell.get("Type", 2))
-            pipe.set_direction(cell.get("Direction", 0))
-                
-    
-    
-    
 func create_new_pipe_grid(column: int, row :int):
     var twoDArray = make_2d_array(column, row)
     
@@ -132,15 +147,17 @@ func make_2d_array(column: int, row: int):
         
 
 #Converts the given column and row into x and y pixel co-ordinates (the top left of a cell space)
+#As the y co-ordinate is reversed when drawing. This method reverts so the pixel is correct
 func grid_to_pixel(column, row):
     var new_x = x_position + (column * cell_size) 
-    var new_y = y_position + (row * cell_size)
+    var new_y = y_position + ((self.row - 1) * cell_size) - (row * cell_size)
     return Vector2(new_x, new_y)
 
-#Converts the given x and y into positions on the grid   
+#Converts the given x and y into positions on the grid.
+#As the y co-ordinate is reversed when drawing. This method reverts so the grid is correct
 func pixel_to_grid(x, y):
     var new_x = floor((x - x_position) / cell_size)
-    var new_y = floor((y - y_position) / cell_size)
+    var new_y = (self.row - 1) - floor((y - y_position) / cell_size)
     return Vector2(new_x, new_y)
 
 #Checks if the given column and row is contained in the grid
@@ -165,11 +182,12 @@ func on_mouse_click():
         var mouse_local_position = get_local_mouse_position()
         var mouse_grid_position = pixel_to_grid(mouse_local_position.x, mouse_local_position.y)
         
-        if contains(mouse_grid_position.x, mouse_grid_position.y, all_pieces):   
-            #all_pieces[mouse_grid_position.x][mouse_grid_position.y].rotate_pipe()
-            emit_signal("pipe_touch", mouse_grid_position.x, mouse_grid_position.y)
-            #if full_grid_pipe_pass_sequence(all_pieces):
-                #emit_signal("connection_found")
+        if board != null:
+            if contains(mouse_grid_position.x, mouse_grid_position.y, board):   
+                #board[mouse_grid_position.x][mouse_grid_position.y].rotate_pipe()
+                emit_signal("pipe_touch", mouse_grid_position.x, mouse_grid_position.y)
+                #if full_grid_pipe_pass_sequence(board):
+                    #emit_signal("connection_found")
  
 
 func point_is_empty(x: int, y: int, pipe_grid):
@@ -361,15 +379,9 @@ func _on_pipe_stop():
     pipe_moving_count -= 1
     if pipe_moving_count <= 0:
         pipe_moving_count = 0
-        var hasConnection = full_grid_pipe_pass_sequence(all_pieces)
+        var hasConnection = full_grid_pipe_pass_sequence(board)
         if !hasConnection :
             self.set_process(true)  
-        
-func convert_to_json():
-    print("ok")
-    
-    
-                
                 
 class PipeNode:
     var parent = null

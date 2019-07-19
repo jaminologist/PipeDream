@@ -8,8 +8,15 @@ var pipe_line_texture = preload("res://entities/pipes/assets/pipe_line_0.png")
 
 
 enum Direction {UP = 0, DOWN = 180, RIGHT = 90, LEFT = 270}
+enum PipeColor {Color_0 = 0, Color_1 = 1, Color_2 = 2, Color_3 = 3}
+
 
 export (int) var speed
+
+export (Color) var pipe_color_0
+export (Color) var pipe_color_1
+export (Color) var pipe_color_2
+export (Color) var pipe_color_3
 
 signal pipe_moving
 signal pipe_stop
@@ -53,10 +60,23 @@ func set_texture_using_type(type: int):
         PipeType.L_PIPE: 
             texture = pipe_l_texture
     
+    self.type = type
     get_node("Sprite").set_texture(texture)
+    
+func set_pipeColor(pipeColor: int):
+    match pipeColor:
+        PipeColor.Color_0: 
+             get_node("Sprite").modulate = pipe_color_0
+        PipeColor.Color_1: 
+             get_node("Sprite").modulate = pipe_color_1
+        PipeColor.Color_2: 
+             get_node("Sprite").modulate = pipe_color_2
+        PipeColor.Color_3: 
+             get_node("Sprite").modulate = pipe_color_3
     
     
 func set_direction(direction):
+    
     self.direction = direction
     get_node("Sprite").rotation_degrees = direction
     
