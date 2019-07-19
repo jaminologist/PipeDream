@@ -89,8 +89,6 @@ func (s *Server) Run() {
 
 		if len(s.playersLookingForLobby) > 0 {
 
-			fmt.Println("playerlooking for lobby: ", len(s.playersLookingForLobby))
-
 			for i := 0; i < len(s.playersLookingForLobby); i++ {
 				if len(s.emptyLobbies) == 0 {
 					s.emptyLobbies = append(s.emptyLobbies, NewLobby())
@@ -195,16 +193,20 @@ type SinglePlayerBlitzGameState struct {
 
 func (g *SinglePlayerBlitzGame) Run() {
 
+	g.board.UpdateBoardPipeConnections()
+
 	go func() {
+
+		g.send(&SinglePlayerBlitzGameState{
+			Board: g.board,
+		})
 
 		for {
 			g.timeLimit = g.timeLimit - serverTick
 			isOver := g.timeLimit <= 0
-
-			println("Waiting here:::::::::")
-
-			g.sendGameState(g.board, 100, g.timeLimit, isOver)
-
+			g.send(&SinglePlayerBlitzGameState{
+				Time: g.timeLimit,
+			})
 			if isOver {
 				break
 			}
@@ -216,8 +218,8 @@ func (g *SinglePlayerBlitzGame) Run() {
 	for {
 		select {
 		case boardInput := <-g.playerInputChannel:
-			print("should rotate:(", boardInput.X, ",", boardInput.Y, ")")
 			g.board.Cells[boardInput.X][boardInput.Y].RotateClockWise()
+			g.board.UpdateBoardPipeConnections()
 			g.sendGameState(g.board, 100, g.timeLimit, g.timeLimit <= 0)
 		}
 	}
@@ -231,6 +233,17 @@ func (g *SinglePlayerBlitzGame) sendGameState(b *Board, s int, time time.Duratio
 		Time:   time,
 		IsOver: isOver,
 	})
+
+	if err != nil {
+		log.Println(err)
+	} else {
+		g.singlePlayerLobby.boardcastAll <- &Message{messageType: websocket.TextMessage, message: messageBytes}
+	}
+
+}
+
+func (g *SinglePlayerBlitzGame) send(v interface{}) {
+	messageBytes, err := json.Marshal(v)
 
 	if err != nil {
 		log.Println(err)

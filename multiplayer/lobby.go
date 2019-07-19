@@ -213,11 +213,8 @@ OuterLoop:
 			}
 
 		case messageFromPlayer := <-l.playerMessageChannel:
-			//TODO
 			var input BoardInput
 			err := json.Unmarshal(messageFromPlayer.message, &input)
-
-			fmt.Println(input)
 
 			if err == nil {
 				l.game.playerInputChannel <- &input

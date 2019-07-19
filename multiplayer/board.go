@@ -8,8 +8,13 @@ import (
 type Board struct {
 	Cells [][]*Pipe
 
-	numberOfColumns int
-	numberOfRows    int
+	NumberOfColumns int
+	NumberOfRows    int
+}
+
+//BoardReport Sends back information about board updates that can be used to calculate client animations
+type BoardReport struct {
+	DestroyedPipes []DestroyedPipe
 }
 
 var allTypes = []PipeType{
@@ -22,6 +27,10 @@ var cornerTypes = []PipeType{
 	LPIPE,
 	END,
 }
+
+var level1Size = 2
+var level2Size = 4
+var level3Size = 6
 
 //NewBoard returns a new board with the given number of rows and columns and radomized set of pipes
 func NewBoard(numberOfColumns int, numberOfRows int) Board {
@@ -39,8 +48,8 @@ func NewBoard(numberOfColumns int, numberOfRows int) Board {
 
 	return Board{
 		Cells:           cells,
-		numberOfColumns: numberOfColumns,
-		numberOfRows:    numberOfRows,
+		NumberOfColumns: numberOfColumns,
+		NumberOfRows:    numberOfRows,
 	}
 
 }
@@ -61,38 +70,128 @@ func newRandomizedPipe(x int, y int, numberOfColumns int) Pipe {
 }
 
 //UpdateBoardPipeConnections loops through the board and checks to see which pipes are connected together
-func (b *Board) UpdateBoardPipeConnections() {
+//Returns true if a connections is found
+func (b *Board) UpdateBoardPipeConnections() bool {
 
-	vistedPointsMap := make(map[point]bool)
+	connectionFound := true
+
+	for connectionFound {
+
+		closedTrees := b.findAllClosedPipeTrees()
+
+		connectionFound = len(closedTrees) > 0
+		//func calculatenewpositionsforexplosivespipes (as well as the exploding pipes)
+		//delete pipes
+		b.deletePipeTreesFromBoard(closedTrees)
+		//add in explosive pipes
+
+		//add in new pipes into the empty slots
+		b.addMissingPipesToBoard()
+		//return if the number of connects was larger than zero
+	}
+
+	return connectionFound
+}
+
+func (b *Board) deletePipeTreesFromBoard(pipeTrees []*pipeTree) []DestroyedPipe {
+
+	destroyedPipes := make([]DestroyedPipe, 0, 0)
+
+	for _, rootpipeTree := range pipeTrees {
+		for _, pipeTree := range rootpipeTree.rootAndChildren() {
+			pipe := b.Cells[pipeTree.x][pipeTree.y]
+			destroyedPipes = append(destroyedPipes, DestroyedPipe{Type: pipe.Type, X: pipeTree.x, Y: pipeTree.y})
+			b.Cells[pipeTree.x][pipeTree.y] = nil
+		}
+	}
+
+	return destroyedPipes
+}
+
+func (b *Board) addMissingPipesToBoard() {
 
 	for x := 0; x < len(b.Cells); x++ {
+
+		resetPosition := 0
+
 		for y := 0; y < len(b.Cells[x]); y++ {
-			vistedPointsMap[point{x, y}] = false
+
+			if b.Cells[x][y] != nil {
+
+				if y > resetPosition {
+					pipe := b.Cells[x][y]
+					b.Cells[x][y] = nil
+					b.Cells[x][resetPosition] = pipe
+					y = resetPosition - 1
+				} else {
+					resetPosition++
+				}
+			}
 		}
 	}
 
 	for x := 0; x < len(b.Cells); x++ {
+		for y := 0; y < len(b.Cells[x]); y++ {
+			if b.Cells[x][y] == nil {
+				newPipe := newRandomizedPipe(x, y, b.NumberOfColumns)
+				b.Cells[x][y] = &newPipe
+			}
+		}
+	}
+
+	//newPipe := newRandomizedPipe(x, resetPosition, b.NumberOfColumns)
+	//b.Cells[x][resetPosition] = &newPipe
+}
+
+func (b *Board) findAllClosedPipeTrees() []*pipeTree {
+
+	visitedPoints := make(map[point]bool)
+
+	closedTrees := make([]*pipeTree, 0, 0)
+
+	for x := 0; x < len(b.Cells); x++ {
 
 		for y := 0; y < len(b.Cells[x]); y++ {
 
-			if visited, _ := vistedPointsMap[point{x, y}]; visited {
+			if _, visited := visitedPoints[point{x, y}]; visited {
 				continue
 			}
 
+			visitedPoints[point{x, y}] = true
 			rootPipeTree := newPipeTree(b.Cells[x][y], x, y)
 
-			isClosedTree := traversePipeTreeToCheckForClosedConnection(&rootPipeTree, vistedPointsMap, b)
+			isClosedTree := traversePipeTreeToCheckForClosedConnection(&rootPipeTree, visitedPoints, b)
 
-			_ = isClosedTree
+			if isClosedTree {
+				closedTrees = append(closedTrees, &rootPipeTree)
+			}
 
+			pipeTrees := rootPipeTree.rootAndChildren()
+
+			size := len(pipeTrees)
+
+			for _, pipeTree := range pipeTrees {
+
+				switch {
+				case size < level1Size:
+					pipeTree.Pipe.Level = LEVEL_0
+				case size < level2Size:
+					pipeTree.Pipe.Level = LEVEL_1
+				case size < level3Size:
+					pipeTree.Pipe.Level = LEVEL_2
+				case size >= level3Size:
+					pipeTree.Pipe.Level = LEVEL_3
+				}
+			}
 		}
 	}
+
+	return closedTrees
 
 }
 
 func (b *Board) containsPoint(p *point) bool {
-
-	if p.x < 0 || p.x > len(b.Cells) {
+	if p.x < 0 || p.x > len(b.Cells)-1 {
 		return false
 	} else if p.y < 0 || p.y > len(b.Cells[p.x])-1 {
 		return false
@@ -100,35 +199,40 @@ func (b *Board) containsPoint(p *point) bool {
 	return true
 }
 
-func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, vistedPointsMap map[point]bool, board *Board) bool {
+func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, visitedPoints map[point]bool, board *Board) bool {
 
 	isClosedTree := true
 	pointsTo := rootPipeTree.pointsTo(rootPipeTree.x, rootPipeTree.y)
 
 	for i := 0; i < len(pointsTo); i++ {
 
-		point := pointsTo[i]
+		pointToPoint := pointsTo[i]
 
-		if board.containsPoint(&point) {
+		if board.containsPoint(&pointToPoint) {
 
-			childTree := newPipeTree(board.Cells[point.x][point.y], point.x, point.y)
+			childTree := newPipeTree(board.Cells[pointToPoint.x][pointToPoint.y], pointToPoint.x, pointToPoint.y)
 			childPointsTo := childTree.pointsTo(childTree.x, childTree.y)
 
 			childPointsToParent := false
 
 			for j := 0; j < len(childPointsTo); j++ {
+
 				if childPointsTo[j].x == rootPipeTree.x && childPointsTo[j].y == rootPipeTree.y {
 					childPointsToParent = true
 					break
 				}
 			}
 
-			if visited, _ := vistedPointsMap[point]; !visited && childPointsToParent {
-				rootPipeTree.addChild(&childTree)
-				isChildClosedTree := traversePipeTreeToCheckForClosedConnection(&childTree, vistedPointsMap, board)
+			if childPointsToParent {
 
-				if isClosedTree == true {
-					isClosedTree = isChildClosedTree
+				if _, visited := visitedPoints[pointToPoint]; !visited {
+					visitedPoints[pointToPoint] = true
+					rootPipeTree.addChild(&childTree)
+					isChildClosedTree := traversePipeTreeToCheckForClosedConnection(&childTree, visitedPoints, board)
+
+					if isClosedTree == true {
+						isClosedTree = isChildClosedTree
+					}
 				}
 			} else {
 				isClosedTree = false
@@ -145,7 +249,7 @@ func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, vistedPo
 
 type pipeTree struct {
 	parent   *pipeTree
-	children []*pipeTree
+	Children []*pipeTree
 	*Pipe
 
 	point
@@ -160,27 +264,27 @@ func newPipeTree(pipe *Pipe, x int, y int) pipeTree {
 
 func (pt *pipeTree) addChild(childTree *pipeTree) {
 	childTree.parent = pt
-	pt.children = append(pt.children, childTree)
+	pt.Children = append(pt.Children, childTree)
 }
 
 func (pt *pipeTree) treeSize() int {
 
 	count := 1
 
-	for _, child := range pt.children {
+	for _, child := range pt.Children {
 		count += child.treeSize()
 	}
 
 	return count
 }
 
-func (pt *pipeTree) rootAndChildren() []*pipeTree{
+func (pt *pipeTree) rootAndChildren() []*pipeTree {
 
 	pipeTreeSlice := make([]*pipeTree, 0, 0)
 
 	pipeTreeSlice = append(pipeTreeSlice, pt)
 
-	for _, child := range pt.children {
+	for _, child := range pt.Children {
 		pipeTreeSlice = append(pipeTreeSlice, child.rootAndChildren()...)
 	}
 
@@ -198,6 +302,13 @@ type Pipe struct {
 	Type      PipeType
 	Direction PipeDirection
 	Level     PipeLevel
+}
+
+type DestroyedPipe struct {
+	Type PipeType
+
+	X int
+	Y int
 }
 
 //RotateClockWise Rotates the direction of the pipe clockwise
