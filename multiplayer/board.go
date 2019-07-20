@@ -71,26 +71,32 @@ func newRandomizedPipe(x int, y int, numberOfColumns int) Pipe {
 
 //UpdateBoardPipeConnections loops through the board and checks to see which pipes are connected together
 //Returns true if a connections is found
-func (b *Board) UpdateBoardPipeConnections() bool {
+func (b *Board) UpdateBoardPipeConnections() []BoardReport {
 
 	connectionFound := true
 
+	boardReports := make([]BoardReport, 0, 0)
+
 	for connectionFound {
+
+		boardReport := BoardReport{}
 
 		closedTrees := b.findAllClosedPipeTrees()
 
 		connectionFound = len(closedTrees) > 0
 		//func calculatenewpositionsforexplosivespipes (as well as the exploding pipes)
 		//delete pipes
-		b.deletePipeTreesFromBoard(closedTrees)
+		boardReport.DestroyedPipes = b.deletePipeTreesFromBoard(closedTrees)
 		//add in explosive pipes
 
 		//add in new pipes into the empty slots
 		b.addMissingPipesToBoard()
 		//return if the number of connects was larger than zero
+
+		boardReports = append(boardReports, boardReport)
 	}
 
-	return connectionFound
+	return boardReports
 }
 
 func (b *Board) deletePipeTreesFromBoard(pipeTrees []*pipeTree) []DestroyedPipe {

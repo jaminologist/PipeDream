@@ -185,10 +185,11 @@ func NewSinglePlayerBlitzGame(spl *SinglePlayerLobby, timeLimit time.Duration) *
 }
 
 type SinglePlayerBlitzGameState struct {
-	Board  *Board
-	Score  int
-	Time   time.Duration
-	IsOver bool
+	Board          *Board
+	Score          int
+	Time           time.Duration
+	IsOver         bool
+	DestroyedPipes []DestroyedPipe
 }
 
 func (g *SinglePlayerBlitzGame) Run() {
@@ -219,8 +220,18 @@ func (g *SinglePlayerBlitzGame) Run() {
 		select {
 		case boardInput := <-g.playerInputChannel:
 			g.board.Cells[boardInput.X][boardInput.Y].RotateClockWise()
-			g.board.UpdateBoardPipeConnections()
-			g.sendGameState(g.board, 100, g.timeLimit, g.timeLimit <= 0)
+			boardReport := g.board.UpdateBoardPipeConnections()
+
+			gameState := SinglePlayerBlitzGameState{
+				Time:  g.timeLimit,
+				Board: g.board,
+			}
+
+			if len(boardReport) > 0 {
+				gameState.DestroyedPipes = boardReport[0].DestroyedPipes
+			}
+
+			g.send(&gameState)
 		}
 	}
 
