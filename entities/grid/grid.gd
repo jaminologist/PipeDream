@@ -62,6 +62,30 @@ func load_board_into_grid(board:Dictionary):
             pipe.set_texture_using_type(cell.get("Type", 2))
             pipe.set_direction(cell.get("Direction", 0))
             pipe.set_pipeColor(cell.get("Level", 0))
+            
+func load_destroyed_pipes(destroyedPipes:Array):
+     
+    for i in range(0, destroyedPipes.size()):
+        var type = destroyedPipes[i].get("Type", PipeType.LINE)
+        
+        var gridX = destroyedPipes[i].get("X", 0)
+        var gridY = destroyedPipes[i].get("Y", 0)
+        
+        var pos = grid_to_pixel(gridX, gridY)
+        var x = pos.x + cell_size / 2
+        var y = pos.y + cell_size / 2
+    
+        if type == PipeType.END_EXPLOSION_3:
+            $GibletFactory.numberOfGiblets = 24
+            $GibletFactory.create_explosion(x, y)
+            emit_signal("explosive_pipe_destroyed", 6, 2)
+        elif  type == PipeType.END_EXPLOSION_2:
+            $GibletFactory.numberOfGiblets = 12
+            $GibletFactory.create_explosion(x, y)
+            emit_signal("explosive_pipe_destroyed", 6, 2)
+        else:
+            $GibletFactory.numberOfGiblets = 6
+            $GibletFactory.create_explosion(x, y)
 
 
 
@@ -340,6 +364,8 @@ func remove(x: int, y: int, grid):
     else:
         $GibletFactory.numberOfGiblets = 6
         $GibletFactory.create_explosion(pos.x, pos.y)
+        
+
         
     
 

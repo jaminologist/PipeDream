@@ -44,6 +44,11 @@ func poll_client_and_update():
                 if firstload:
                     $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
                     $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
+                    
+        if json.has("DestroyedPipes"):
+            print(json.get("DestroyedPipes"))
+            if json.get("DestroyedPipes") != null:
+                $Grid.load_destroyed_pipes(json.get("DestroyedPipes", []))
     
 #func update_time_counter_text():
 #    var minutes = time_limit / 60
