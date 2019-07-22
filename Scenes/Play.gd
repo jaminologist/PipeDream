@@ -41,6 +41,10 @@ func poll_client_and_update():
         
         if json.get("Time", null) != null:
             update_time_counter_text(json.get("Time"))
+            
+        print(json.get("Score"))
+        if json.get("Score", null) != null:
+            get_node("VBoxContainer/VBoxContainer3/VBoxScoreContainer/Score_Number_Label").set_score(json.get("Score", 0))
         
         if json.get("Board", null) != null:
             var firstload = $Grid.board == null
