@@ -33,22 +33,25 @@ func poll_client_and_update():
     if json != null:
         json as Dictionary
         
-        if json.has("Time"):
+        if json.get("BoardReports", null) != null:
+           #print(json)
+            var boardReports = json.get("BoardReports", null) 
+            if boardReports.size() > 0:
+                $Grid.load_boardreports_into_grid(boardReports)
+        
+        if json.get("Time", null) != null:
             update_time_counter_text(json.get("Time"))
         
-        if json.has("Board"):
-            if json.get("Board") != null:
-                var firstload = $Grid.board == null
-                $Grid.load_board_into_grid(json.get("Board"))
+        if json.get("Board", null) != null:
+            var firstload = $Grid.board == null
+            $Grid.load_board_into_grid(json.get("Board"))
+            
+            if firstload:
+                $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
+                $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
                 
-                if firstload:
-                    $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
-                    $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
-                    
-        if json.has("DestroyedPipes"):
-            print(json.get("DestroyedPipes"))
-            if json.get("DestroyedPipes") != null:
-                $Grid.load_destroyed_pipes(json.get("DestroyedPipes", []))
+        if json.get("DestroyedPipes", null) != null:
+            $Grid.load_destroyed_pipes(json.get("DestroyedPipes", []))
     
 #func update_time_counter_text():
 #    var minutes = time_limit / 60

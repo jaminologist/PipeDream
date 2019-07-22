@@ -21,11 +21,14 @@ export (Color) var pipe_color_3
 signal pipe_moving
 signal pipe_stop
 
+var startPosition = Vector2()
 var destination = Vector2()
 var velocity = Vector2()
 var direction = Direction.UP
 var type = PipeType.NONE
 var is_moving = false
+
+var travel_time
 
 func _ready():
     direction = Direction.UP
@@ -40,9 +43,13 @@ func get_type():
 func get_direction():
     return direction
 
-func move_to(destination: Vector2):
+#Assume travel_time is passed down in nanoseconds
+func move_to(startPosition:Vector2, destination: Vector2, travel_time:float):
     is_moving = true
+    self.travel_time = travel_time / 1000000000
     emit_signal("pipe_moving")
+    
+    self.startPosition = startPosition
     self.destination = destination 
     
 func set_texture_using_type(type: int):
@@ -143,11 +150,17 @@ func points_to(column: int, row: int) -> Array:
 func _physics_process(delta):
     
     if is_moving:
-        velocity = (destination - position).normalized() * speed * delta
+        
+        
+        velocity = Vector2(0, (destination.y - startPosition.y) * (delta / travel_time))
         #print("Vectors!", destination, position, destination - position, velocity)
-        if (destination - position).length() > 10:
-            position += velocity 
-        else:
+       # targetDistanceY = startPosition.y - destination.y
+       # print((destination - startPosition).length())
+       # print((destination - position).length())
+        #if (startPosition - position).length() < (startPosition - destination).length():
+        position += velocity 
+        
+        if (startPosition - position).length() > (startPosition - destination).length():
             is_moving = false
             emit_signal("pipe_stop")
             position = destination

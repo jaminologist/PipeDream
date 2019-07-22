@@ -37,7 +37,13 @@ var corner_pieces = [
 ]
 
 var board
+var boardReports:Array = []
+var boardAnimationInProgress = false
 
+func load_boardreports_into_grid(boardReports: Array):
+    if boardReports.size() <= 0:
+        return
+    self.boardReports = boardReports
 
 func load_board_into_grid(board:Dictionary):
     var cells:Array = board.get("Cells")
@@ -51,6 +57,8 @@ func load_board_into_grid(board:Dictionary):
             for y in row:
                 var pipe = pipe_preload.instance()
                 add_child(pipe)
+                pipe.connect("pipe_moving", self, "_on_pipe_moving")
+                pipe.connect("pipe_stop", self, "_on_pipe_stop")
                 pipe.position = grid_to_pixel(x, y)
                 pipe.set_size(cell_size,cell_size)
                 self.board[x][y] = pipe
@@ -86,7 +94,64 @@ func load_destroyed_pipes(destroyedPipes:Array):
         else:
             $GibletFactory.numberOfGiblets = 6
             $GibletFactory.create_explosion(x, y)
+            
+func load_pipe_movement_animation(pipeMovementAnimations:Array):
+    
+    if pipeMovementAnimations.size() > 0:
+        boardAnimationInProgress = true
+    
+    for i in range(0, pipeMovementAnimations.size()):
+        var pipeMovementAnimation = pipeMovementAnimations[i]
+        var startX = pipeMovementAnimation.get("X", 0)
+        var startY = pipeMovementAnimation.get("StartY", 0)
+        var endY = pipeMovementAnimation.get("EndY", 0)
+        var travel_time = pipeMovementAnimation.get("TravelTime", 0)
+        var pipe = self.board[startX][endY]
+        pipe.position = grid_to_pixel(startX, startY)
+        pipe.move_to(grid_to_pixel(startX, startY), grid_to_pixel(startX, endY), travel_time)
+        
+        
+        
+    pass
 
+func _on_pipe_moving():
+    self.set_process(false)  
+    print("Singal recevied")
+    pipe_moving_count += 1
+    
+func _on_pipe_stop():
+    pipe_moving_count -= 1
+    if pipe_moving_count <= 0:
+        pipe_moving_count = 0
+        boardAnimationInProgress = false
+        self.set_process(true)  
+        #var hasConnection = full_grid_pipe_pass_sequence(board)
+        #if !hasConnection :
+            #self.set_process(true)  
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+   
+    if boardReports.size() > 0 && !boardAnimationInProgress:
+        var boardReport = boardReports[0]
+        
+        if boardReport.get("DestroyedPipes", null) == null && boardReport.get("PipeMovementAnimations", null) == null:
+            load_board_into_grid(boardReport.get("Board"))
+            boardReports.pop_front()
+            return
+        if boardReport.get("DestroyedPipes", null) != null:
+            load_destroyed_pipes(boardReport.get("DestroyedPipes", []))
+            boardReport["DestroyedPipes"] =  null
+            
+        if boardReport.get("PipeMovementAnimations", null) != null:
+            load_board_into_grid(boardReport.get("Board"))
+            load_pipe_movement_animation(boardReport.get("PipeMovementAnimations", []))
+            boardReport["PipeMovementAnimations"] =  null
+    else:
+        boardReports = []
+        #return
+    on_mouse_click() 
+    pass
 
 
 # Called when the node enters the scene tree for the first time.
@@ -117,11 +182,6 @@ func _ready():
     #    print("Oh no, there was a conneciton, you should probably write a unit test about this")
     
     #full_grid_pipe_pass_sequence(board)
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-    on_mouse_click()
-    pass
     
 #Creates a new pipe and adds it into the grid at position x and y
 func generate_new_pipe(x: int, y:int, pipe_grid):
@@ -395,19 +455,6 @@ func update_pipe_position_after_remove(pipe_grid):
                 else:
                     resetPosition -= 1
             y -= 1
-            
-            
-func _on_pipe_moving():
-    self.set_process(false)  
-    pipe_moving_count += 1
-    
-func _on_pipe_stop():
-    pipe_moving_count -= 1
-    if pipe_moving_count <= 0:
-        pipe_moving_count = 0
-        var hasConnection = full_grid_pipe_pass_sequence(board)
-        if !hasConnection :
-            self.set_process(true)  
                 
 class PipeNode:
     var parent = null
