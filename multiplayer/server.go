@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -167,6 +168,8 @@ type SinglePlayerBlitzGame struct {
 	board             *Board
 	timeLimit         time.Duration
 
+	score int
+
 	playerInputChannel chan *BoardInput
 }
 
@@ -185,11 +188,14 @@ func NewSinglePlayerBlitzGame(spl *SinglePlayerLobby, timeLimit time.Duration) *
 
 type SinglePlayerBlitzGameState struct {
 	Board          *Board
-	BoardReports 	[]BoardReport
+	BoardReports   []BoardReport
 	Score          int
-	Time           time.Duration
 	IsOver         bool
 	DestroyedPipes []DestroyedPipe
+}
+
+type TimeLimit struct {
+	Time time.Duration
 }
 
 func (g *SinglePlayerBlitzGame) Run() {
@@ -200,12 +206,13 @@ func (g *SinglePlayerBlitzGame) Run() {
 
 		g.send(&SinglePlayerBlitzGameState{
 			Board: g.board,
+			Score: g.score,
 		})
 
 		for {
 			g.timeLimit = g.timeLimit - serverTick
 			isOver := g.timeLimit <= 0
-			g.send(&SinglePlayerBlitzGameState{
+			g.send(&TimeLimit{
 				Time: g.timeLimit,
 			})
 			if isOver {
@@ -222,34 +229,21 @@ func (g *SinglePlayerBlitzGame) Run() {
 			g.board.Cells[boardInput.X][boardInput.Y].RotateClockWise()
 			boardReports := g.board.UpdateBoardPipeConnections()
 
-			gameState := SinglePlayerBlitzGameState{
-				BoardReports: boardReports,
-				//Time:  g.timeLimit,
-				//Board: g.board,
+			pipesDestroyed := 0
+			for i := 0; i < len(boardReports); i++ {
+				pipesDestroyed += len(boardReports[i].DestroyedPipes)
 			}
 
-			/*if len(boardReport) > 0 {
-				gameState.DestroyedPipes = boardReport[0].DestroyedPipes
-			}*/
+			g.score += 1250 * pipesDestroyed
+
+			fmt.Println(g.score)
+			gameState := SinglePlayerBlitzGameState{
+				BoardReports: boardReports,
+				Score:        g.score,
+			}
 
 			g.send(&gameState)
 		}
-	}
-
-}
-
-func (g *SinglePlayerBlitzGame) sendGameState(b *Board, s int, time time.Duration, isOver bool) {
-	messageBytes, err := json.Marshal(&SinglePlayerBlitzGameState{
-		Board:  b,
-		Score:  s,
-		Time:   time,
-		IsOver: isOver,
-	})
-
-	if err != nil {
-		log.Println(err)
-	} else {
-		g.singlePlayerLobby.boardcastAll <- &Message{messageType: websocket.TextMessage, message: messageBytes}
 	}
 
 }

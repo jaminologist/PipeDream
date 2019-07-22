@@ -13,6 +13,51 @@ type Board struct {
 	NumberOfRows    int
 }
 
+//Pipe Represents a pipe within the game has a Type, Direction and 'Level' and an X and Y position
+type Pipe struct {
+	Type      PipeType
+	Direction PipeDirection
+	Level     PipeLevel
+	X         int
+	Y         int
+}
+
+//PipeType the types of pipe that exist within the game.
+type PipeType int
+
+//Collection of all pipe types in the game
+const (
+	NONE          PipeType = -1
+	LINE          PipeType = 0
+	LPIPE         PipeType = 2
+	END           PipeType = 4
+	ENDEXPLOSION2 PipeType = 8
+	ENDEXPLOSION3 PipeType = 16
+)
+
+//PipeDirection The Direction the pipe is facing
+type PipeDirection int
+
+//Collection of pipe directions set using Dir
+const (
+	UP    PipeDirection = 0
+	RIGHT PipeDirection = 90
+	DOWN  PipeDirection = 180
+	LEFT  PipeDirection = 270
+)
+
+var pipeDirections = []PipeDirection{UP, RIGHT, DOWN, LEFT}
+
+//PipeLevel Used to display the the level of the pipes connected to this pipe.
+type PipeLevel int
+
+const (
+	LEVEL_0 PipeLevel = 0
+	LEVEL_1 PipeLevel = 1
+	LEVEL_2 PipeLevel = 2
+	LEVEL_3 PipeLevel = 3
+)
+
 //BoardReport Sends back information about board updates that can be used to calculate client animations
 type BoardReport struct {
 	DestroyedPipes         []DestroyedPipe
@@ -21,14 +66,36 @@ type BoardReport struct {
 	Board                  *Board
 }
 
+//PipeMovementAnimation Used to detail information for pipe 'Falling' animation. From StartY to EndY and expected travel time
+type PipeMovementAnimation struct {
+	X          int
+	StartY     int
+	EndY       int
+	TravelTime time.Duration
+}
+
+//DestroyedPipe Used to detail information for Pipe 'Destroyed' animation using X and Y position and pipe Type
+type DestroyedPipe struct {
+	Type PipeType
+
+	X int
+	Y int
+}
+
+type point struct {
+	x int
+	y int
+}
+
 var allTypes = []PipeType{
-	//LINE,
-	//LPIPE,
+	LINE,
+	LPIPE,
 	END,
+	//ENDEXPLOSION2,
 }
 
 var cornerTypes = []PipeType{
-	//LPIPE,
+	LPIPE,
 	END,
 }
 
@@ -38,8 +105,8 @@ var level3Size = 6
 
 //NewBoard returns a new board with the given number of rows and columns and radomized set of pipes
 func NewBoard(numberOfColumns int, numberOfRows int) Board {
-	numberOfColumns = 4
-	numberOfRows = 4
+	numberOfColumns = 6
+	numberOfRows = 6
 	cells := make([][]*Pipe, numberOfColumns)
 
 	for x := 0; x < numberOfColumns; x++ {
@@ -80,11 +147,17 @@ func newRandomizedPipe(x int, y int, numberOfColumns int) Pipe {
 		pipeTypesToUse = allTypes
 	}
 
+	return newPipe(x, y,
+		pipeTypesToUse[rand.Intn(len(pipeTypesToUse))],
+		getRandomPipeDirection())
+}
+
+func newPipe(x int, y int, pipeType PipeType, pipeDirection PipeDirection) Pipe {
 	return Pipe{
-		Type:      pipeTypesToUse[rand.Intn(len(pipeTypesToUse))],
-		Direction: pipeDirections[rand.Intn(len(pipeDirections))],
 		X:         x,
 		Y:         y,
+		Type:      pipeType,
+		Direction: pipeDirection,
 	}
 }
 
@@ -126,7 +199,9 @@ func (b *Board) UpdateBoardPipeConnections() []BoardReport {
 		//func calculatenewpositionsforexplosivespipes (as well as the exploding pipes)
 		//delete pipes
 		boardReport.DestroyedPipes = b.deletePipeTreesFromBoard(closedTrees)
+
 		//add in explosive pipes
+		b.addSpecialPipesToBoardUsingClosedTrees(closedTrees)
 
 		//add in new pipes into the empty slots
 		boardReport.PipeMovementAnimations, boardReport.MaximumAnimationTime = b.addMissingPipesToBoard()
@@ -141,6 +216,53 @@ func (b *Board) UpdateBoardPipeConnections() []BoardReport {
 	return boardReports
 }
 
+func (b *Board) findAllClosedPipeTrees() []*pipeTree {
+
+	visitedPoints := make(map[point]bool)
+
+	closedTrees := make([]*pipeTree, 0, 0)
+
+	for x := 0; x < len(b.Cells); x++ {
+
+		for y := 0; y < len(b.Cells[x]); y++ {
+
+			if _, visited := visitedPoints[point{x, y}]; visited {
+				continue
+			}
+
+			visitedPoints[point{x, y}] = true
+			rootPipeTree := newPipeTree(b.Cells[x][y], x, y)
+
+			isClosedTree := traversePipeTreeToCheckForClosedConnection(&rootPipeTree, visitedPoints, b)
+
+			if isClosedTree {
+				closedTrees = append(closedTrees, &rootPipeTree)
+			}
+
+			pipeTrees := rootPipeTree.rootAndChildren()
+
+			size := len(pipeTrees)
+
+			for _, pipeTree := range pipeTrees {
+
+				switch {
+				case size < level1Size:
+					pipeTree.Pipe.Level = LEVEL_0
+				case size < level2Size:
+					pipeTree.Pipe.Level = LEVEL_1
+				case size < level3Size:
+					pipeTree.Pipe.Level = LEVEL_2
+				case size >= level3Size:
+					pipeTree.Pipe.Level = LEVEL_3
+				}
+			}
+		}
+	}
+
+	return closedTrees
+
+}
+
 func (b *Board) deletePipeTreesFromBoard(pipeTrees []*pipeTree) []DestroyedPipe {
 
 	destroyedPipes := make([]DestroyedPipe, 0, 0)
@@ -148,23 +270,100 @@ func (b *Board) deletePipeTreesFromBoard(pipeTrees []*pipeTree) []DestroyedPipe 
 	for _, rootpipeTree := range pipeTrees {
 		for _, pipeTree := range rootpipeTree.rootAndChildren() {
 			pipe := b.Cells[pipeTree.x][pipeTree.y]
-			destroyedPipes = append(destroyedPipes, DestroyedPipe{Type: pipe.Type, X: pipeTree.x, Y: pipeTree.y})
-			b.Cells[pipeTree.x][pipeTree.y] = nil
+			if pipe != nil {
+				if destroyedPipe, ok := b.deleteFromBoard(pipeTree.x, pipeTree.y); ok {
+					destroyedPipes = append(destroyedPipes, destroyedPipe...)
+				}
+			}
 		}
 	}
 
 	return destroyedPipes
 }
 
-type PipeMovementAnimation struct {
-	X          int
-	StartY     int
-	EndY       int
-	TravelTime time.Duration
+func (b *Board) deleteFromBoard(x int, y int) ([]DestroyedPipe, bool) {
+
+	destroyedPipes := make([]DestroyedPipe, 0, 0)
+
+	if b.containsPoint(&point{x, y}) {
+
+		if b.Cells[x][y] != nil {
+			pipe := b.Cells[x][y]
+
+			destroyedPipes = append(destroyedPipes, DestroyedPipe{Type: pipe.Type, X: pipe.X, Y: pipe.Y})
+
+			b.Cells[x][y] = nil
+
+			if pipe.Type == ENDEXPLOSION2 {
+				for _, point := range positionInSquareRange(pipe.X, pipe.Y, 2) {
+					if destroyedPipe, ok := b.deleteFromBoard(point.x, point.y); ok {
+						destroyedPipes = append(destroyedPipes, destroyedPipe...)
+					}
+				}
+			} else if pipe.Type == ENDEXPLOSION3 {
+				for _, point := range positionInSquareRange(pipe.X, pipe.Y, 3) {
+					if destroyedPipe, ok := b.deleteFromBoard(point.x, point.y); ok {
+						destroyedPipes = append(destroyedPipes, destroyedPipe...)
+					}
+				}
+			}
+
+			return destroyedPipes, true
+		}
+	}
+
+	return []DestroyedPipe{}, false
+}
+
+func positionInSquareRange(startX int, startY int, size int) []point {
+	positions := make([]point, 0, 0)
+
+	if size <= 0 {
+		return positions
+	}
+
+	for x := 0; x < size; x++ {
+		for y := 0; y < size; y++ {
+			if x == 0 && y == 0 {
+				continue
+			}
+
+			positions = append(positions,
+				point{x: startX + x, y: startY + y},
+				point{x: startX + x, y: startY - y},
+				point{x: startX - x, y: startY + y},
+				point{x: startX - x, y: startY - y},
+			)
+		}
+	}
+
+	return positions
+}
+
+func getRandomPipeDirection() PipeDirection {
+	return pipeDirections[rand.Intn(len(pipeDirections))]
+}
+
+func (b *Board) addSpecialPipesToBoardUsingClosedTrees(rootPipeTrees []*pipeTree) {
+
+	for _, rootpipeTree := range rootPipeTrees {
+
+		allPipes := rootpipeTree.rootAndChildren()
+		pipeTree := allPipes[rand.Intn(len(allPipes))]
+
+		switch rootpipeTree.Level {
+		case LEVEL_2:
+			newPipe := newPipe(pipeTree.X, pipeTree.Y, ENDEXPLOSION2, getRandomPipeDirection())
+			b.Cells[pipeTree.X][pipeTree.Y] = &newPipe
+		case LEVEL_3:
+			newPipe := newPipe(pipeTree.X, pipeTree.Y, ENDEXPLOSION3, getRandomPipeDirection())
+			b.Cells[pipeTree.X][pipeTree.Y] = &newPipe
+		}
+	}
 }
 
 func getTravelTime(i int) time.Duration {
-	return time.Duration(i) * (time.Millisecond * 850)
+	return time.Duration(i) * (time.Millisecond * 100)
 }
 
 func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementAnimation, maximumTime time.Duration) {
@@ -239,56 +438,6 @@ func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementA
 	return
 	//newPipe := newRandomizedPipe(x, resetPosition, b.NumberOfColumns)
 	//b.Cells[x][resetPosition] = &newPipe
-}
-
-func (b *Board) findAllClosedPipeTrees() []*pipeTree {
-
-	visitedPoints := make(map[point]bool)
-
-	closedTrees := make([]*pipeTree, 0, 0)
-
-	for x := 0; x < len(b.Cells); x++ {
-
-		for y := 0; y < len(b.Cells[x]); y++ {
-
-			if _, visited := visitedPoints[point{x, y}]; visited {
-				continue
-			}
-
-			visitedPoints[point{x, y}] = true
-			rootPipeTree := newPipeTree(b.Cells[x][y], x, y)
-
-			//a, _ := json.Marshal(rootPipeTree)
-			//fmt.Println(rootPipeTree.x, ",", rootPipeTree.y, " Type: ", rootPipeTree.Type, " Direction: ", rootPipeTree.Direction)
-
-			isClosedTree := traversePipeTreeToCheckForClosedConnection(&rootPipeTree, visitedPoints, b)
-
-			if isClosedTree {
-				closedTrees = append(closedTrees, &rootPipeTree)
-			}
-
-			pipeTrees := rootPipeTree.rootAndChildren()
-
-			size := len(pipeTrees)
-
-			for _, pipeTree := range pipeTrees {
-
-				switch {
-				case size < level1Size:
-					pipeTree.Pipe.Level = LEVEL_0
-				case size < level2Size:
-					pipeTree.Pipe.Level = LEVEL_1
-				case size < level3Size:
-					pipeTree.Pipe.Level = LEVEL_2
-				case size >= level3Size:
-					pipeTree.Pipe.Level = LEVEL_3
-				}
-			}
-		}
-	}
-
-	return closedTrees
-
 }
 
 func (b *Board) containsPoint(p *point) bool {
@@ -393,27 +542,6 @@ func (pt *pipeTree) rootAndChildren() []*pipeTree {
 
 }
 
-//func newRandomizedPipe() Pipe {
-
-//}
-
-//func newPipe() Pipe
-
-type Pipe struct {
-	Type      PipeType
-	Direction PipeDirection
-	Level     PipeLevel
-	X         int
-	Y         int
-}
-
-type DestroyedPipe struct {
-	Type PipeType
-
-	X int
-	Y int
-}
-
 //RotateClockWise Rotates the direction of the pipe clockwise
 func (p *Pipe) RotateClockWise() {
 	switch p.Direction {
@@ -469,82 +597,4 @@ func pointFromDirection(p point, d PipeDirection) point {
 		return point{p.x - 1, p.y}
 	}
 	return p
-}
-
-/*
-
-#Returns which column and row this pipe points to from the give column and row
-func points_to(column: int, row: int) -> Array:
-
-    match type:
-        PipeType.END, PipeType.END_EXPLOSION_2, PipeType.END_EXPLOSION_3:
-            match direction:
-                Direction.UP:
-                    return [Vector2(column, row - 1)]
-                Direction.DOWN:
-                    return [Vector2(column, row + 1)]
-                Direction.LEFT:
-                    return [Vector2(column - 1, row)]
-                Direction.RIGHT:
-                    return [Vector2(column + 1, row)]
-        PipeType.LINE:
-            match direction:
-                Direction.UP, Direction.DOWN:
-                    return [Vector2(column, row + 1), Vector2(column, row - 1)]
-                Direction.RIGHT, Direction.LEFT:
-                    return [Vector2(column + 1, row), Vector2(column - 1, row)]
-        PipeType.L_PIPE:
-            match direction:
-                Direction.UP:
-                    return [Vector2(column + 1, row), Vector2(column, row - 1)]
-                Direction.DOWN:
-                    return [Vector2(column - 1, row), Vector2(column, row + 1)]
-                Direction.LEFT:
-                    return [Vector2(column - 1, row), Vector2(column, row - 1)]
-                Direction.RIGHT:
-                    return [Vector2(column + 1, row), Vector2(column, row + 1)]
-    return []
-
-
-*/
-
-//PipeType the types of pipe that exist within the game.
-type PipeType int
-
-//Collection of all pipe types in the game
-const (
-	NONE          PipeType = -1
-	LINE          PipeType = 0
-	LPIPE         PipeType = 2
-	END           PipeType = 4
-	ENDEXPLOSION2 PipeType = 8
-	ENDEXPLOSION3 PipeType = 16
-)
-
-//PipeDirection The Direction the pipe is facing
-type PipeDirection int
-
-//Collection of pipe directions set using Dir
-const (
-	UP    PipeDirection = 0
-	RIGHT PipeDirection = 90
-	DOWN  PipeDirection = 180
-	LEFT  PipeDirection = 270
-)
-
-var pipeDirections = []PipeDirection{UP, RIGHT, DOWN, LEFT}
-
-//PipeLevel Used to display the the level of the pipes connected to this pipe.
-type PipeLevel int
-
-const (
-	LEVEL_0 PipeLevel = 0
-	LEVEL_1 PipeLevel = 1
-	LEVEL_2 PipeLevel = 2
-	LEVEL_3 PipeLevel = 3
-)
-
-type point struct {
-	x int
-	y int
 }
