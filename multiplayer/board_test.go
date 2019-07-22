@@ -1,8 +1,10 @@
 package multiplayer
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestNewBoard(t *testing.T) {
@@ -88,6 +90,90 @@ func TestPipe_pointsTo(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.pointsTo(tt.args.x, tt.args.y); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Pipe.pointsTo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+//Allows you to create a board in a human readable fashion for easier testing
+func createTestBoard(numberOfColumns int, numberOfRows int, rowsTopToBottom ...[]*Pipe) Board {
+	testBoard := Board{
+		Cells: make([][]*Pipe, numberOfColumns),
+	}
+
+	for i := 0; i < len(testBoard.Cells); i++ {
+		testBoard.Cells[i] = make([]*Pipe, numberOfRows)
+	}
+
+	height := numberOfRows - 1
+
+	for i := 0; i < len(rowsTopToBottom); i++ {
+		println(i)
+		for index, pipe := range rowsTopToBottom[i] {
+			testBoard.Cells[index][height-i] = pipe
+		}
+	}
+
+	return testBoard
+}
+
+func TestBoard_findAllClosedPipeTrees(t *testing.T) {
+
+	//Future Note: The First array is the x-axis the inner array is the y-axis so come up with a method to
+	//Better board out a board
+	testBoard := createTestBoard(3, 3,
+		[]*Pipe{&Pipe{END, DOWN, 0}, &Pipe{END, DOWN, 0}, &Pipe{END, DOWN, 0}},
+		[]*Pipe{&Pipe{LPIPE, UP, 0}, &Pipe{LINE, LEFT, 0}, &Pipe{LPIPE, DOWN, 0}},
+		[]*Pipe{&Pipe{END, DOWN, 0}, &Pipe{LPIPE, UP, 0}, &Pipe{END, UP, 0}},
+	)
+
+	/*testBoard.Cells[2] = []*Pipe{&Pipe{END, DOWN, 0}, &Pipe{END, UP, 0}, &Pipe{LPIPE, UP, 0}}
+	testBoard.Cells[1] = []*Pipe{&Pipe{END, UP, 0}, &Pipe{LINE, LEFT, 0}, &Pipe{LPIPE, DOWN, 0}}
+	testBoard.Cells[0] = []*Pipe{&Pipe{END, DOWN, 0}, &Pipe{LPIPE, UP, 0}, &Pipe{END, DOWN, 0}}*/
+
+	tests := []struct {
+		name string
+		b    *Board
+		want int
+	}{
+		{"3x3 board test", &testBoard, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if got := tt.b.findAllClosedPipeTrees(); len(got) != tt.want {
+				t.Errorf("Board.findAllClosedPipeTrees() = expected length %v, got %v", tt.want, len(got))
+			}
+		})
+	}
+}
+
+func TestBoard_addMissingPipesToBoard(t *testing.T) {
+
+	testBoard := createTestBoard(3, 3,
+		[]*Pipe{&Pipe{END, DOWN, 0}, &Pipe{END, DOWN, 0}, &Pipe{END, DOWN, 0}},
+		[]*Pipe{nil, &Pipe{LINE, LEFT, 0}, &Pipe{LPIPE, DOWN, 0}},
+		[]*Pipe{&Pipe{END, DOWN, 0}, &Pipe{END, DOWN, 0}, &Pipe{END, UP, 0}},
+	)
+
+	tests := []struct {
+		name                       string
+		b                          *Board
+		wantPipeMovementAnimations []PipeMovementAnimation
+		wantMaximumTime            time.Duration
+	}{
+		{"Starter Grid", &testBoard, []PipeMovementAnimation{}, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotPipeMovementAnimations, gotMaximumTime := tt.b.addMissingPipesToBoard()
+			if !reflect.DeepEqual(gotPipeMovementAnimations, tt.wantPipeMovementAnimations) {
+				fmt.Println(gotPipeMovementAnimations)
+				fmt.Println(gotMaximumTime)
+				t.Errorf("Board.addMissingPipesToBoard() gotPipeMovementAnimations = %v, want %v", gotPipeMovementAnimations, tt.wantPipeMovementAnimations)
+			}
+			if !reflect.DeepEqual(gotMaximumTime, tt.wantMaximumTime) {
+				t.Errorf("Board.addMissingPipesToBoard() gotMaximumTime = %v, want %v", gotMaximumTime, tt.wantMaximumTime)
 			}
 		})
 	}

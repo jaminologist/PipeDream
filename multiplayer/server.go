@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -186,6 +185,7 @@ func NewSinglePlayerBlitzGame(spl *SinglePlayerLobby, timeLimit time.Duration) *
 
 type SinglePlayerBlitzGameState struct {
 	Board          *Board
+	BoardReports 	[]BoardReport
 	Score          int
 	Time           time.Duration
 	IsOver         bool
@@ -220,16 +220,17 @@ func (g *SinglePlayerBlitzGame) Run() {
 		select {
 		case boardInput := <-g.playerInputChannel:
 			g.board.Cells[boardInput.X][boardInput.Y].RotateClockWise()
-			boardReport := g.board.UpdateBoardPipeConnections()
+			boardReports := g.board.UpdateBoardPipeConnections()
 
 			gameState := SinglePlayerBlitzGameState{
-				Time:  g.timeLimit,
-				Board: g.board,
+				BoardReports: boardReports,
+				//Time:  g.timeLimit,
+				//Board: g.board,
 			}
 
-			if len(boardReport) > 0 {
+			/*if len(boardReport) > 0 {
 				gameState.DestroyedPipes = boardReport[0].DestroyedPipes
-			}
+			}*/
 
 			g.send(&gameState)
 		}

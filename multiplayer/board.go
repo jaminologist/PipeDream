@@ -2,6 +2,7 @@ package multiplayer
 
 import (
 	"math/rand"
+	"time"
 )
 
 //Board Used to describe the state of a player's pipe board
@@ -14,17 +15,20 @@ type Board struct {
 
 //BoardReport Sends back information about board updates that can be used to calculate client animations
 type BoardReport struct {
-	DestroyedPipes []DestroyedPipe
+	DestroyedPipes         []DestroyedPipe
+	PipeMovementAnimations []PipeMovementAnimation
+	MaximumAnimationTime   time.Duration
+	Board                  *Board
 }
 
 var allTypes = []PipeType{
-	LINE,
-	LPIPE,
+	//LINE,
+	//LPIPE,
 	END,
 }
 
 var cornerTypes = []PipeType{
-	LPIPE,
+	//LPIPE,
 	END,
 }
 
@@ -34,7 +38,8 @@ var level3Size = 6
 
 //NewBoard returns a new board with the given number of rows and columns and radomized set of pipes
 func NewBoard(numberOfColumns int, numberOfRows int) Board {
-
+	numberOfColumns = 4
+	numberOfRows = 4
 	cells := make([][]*Pipe, numberOfColumns)
 
 	for x := 0; x < numberOfColumns; x++ {
@@ -51,7 +56,19 @@ func NewBoard(numberOfColumns int, numberOfRows int) Board {
 		NumberOfColumns: numberOfColumns,
 		NumberOfRows:    numberOfRows,
 	}
+}
 
+func NewEmptyBoard(numberOfColumns int, numberOfRows int) Board {
+	cells := make([][]*Pipe, numberOfColumns)
+	for x := 0; x < numberOfColumns; x++ {
+		cells[x] = make([]*Pipe, numberOfRows)
+	}
+
+	return Board{
+		Cells:           cells,
+		NumberOfColumns: numberOfColumns,
+		NumberOfRows:    numberOfRows,
+	}
 }
 
 func newRandomizedPipe(x int, y int, numberOfColumns int) Pipe {
@@ -66,7 +83,29 @@ func newRandomizedPipe(x int, y int, numberOfColumns int) Pipe {
 	return Pipe{
 		Type:      pipeTypesToUse[rand.Intn(len(pipeTypesToUse))],
 		Direction: pipeDirections[rand.Intn(len(pipeDirections))],
+		X:         x,
+		Y:         y,
 	}
+}
+
+func CopyBoard(b *Board) Board {
+
+	newBoard := NewEmptyBoard(b.NumberOfColumns, b.NumberOfRows)
+
+	for x := 0; x < b.NumberOfColumns; x++ {
+		for y := 0; y < b.NumberOfRows; y++ {
+			pipe := b.Cells[x][y]
+			newBoard.Cells[x][y] = &Pipe{
+				Type:      pipe.Type,
+				Direction: pipe.Direction,
+				Level:     pipe.Level,
+				X:         pipe.X,
+				Y:         pipe.Y,
+			}
+		}
+	}
+
+	return newBoard
 }
 
 //UpdateBoardPipeConnections loops through the board and checks to see which pipes are connected together
@@ -90,8 +129,11 @@ func (b *Board) UpdateBoardPipeConnections() []BoardReport {
 		//add in explosive pipes
 
 		//add in new pipes into the empty slots
-		b.addMissingPipesToBoard()
+		boardReport.PipeMovementAnimations, boardReport.MaximumAnimationTime = b.addMissingPipesToBoard()
 		//return if the number of connects was larger than zero
+
+		copyBoard := CopyBoard(b)
+		boardReport.Board = &copyBoard
 
 		boardReports = append(boardReports, boardReport)
 	}
@@ -114,8 +156,21 @@ func (b *Board) deletePipeTreesFromBoard(pipeTrees []*pipeTree) []DestroyedPipe 
 	return destroyedPipes
 }
 
-func (b *Board) addMissingPipesToBoard() {
+type PipeMovementAnimation struct {
+	X          int
+	StartY     int
+	EndY       int
+	TravelTime time.Duration
+}
 
+func getTravelTime(i int) time.Duration {
+	return time.Duration(i) * (time.Millisecond * 850)
+}
+
+func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementAnimation, maximumTime time.Duration) {
+
+	pipeMovementAnimations = make([]PipeMovementAnimation, 0, 0)
+	//Lowers Pipes above a Gap
 	for x := 0; x < len(b.Cells); x++ {
 
 		resetPosition := 0
@@ -128,7 +183,24 @@ func (b *Board) addMissingPipesToBoard() {
 					pipe := b.Cells[x][y]
 					b.Cells[x][y] = nil
 					b.Cells[x][resetPosition] = pipe
+					pipe.X = x
+					pipe.Y = resetPosition
+
+					travelTime := getTravelTime(y - resetPosition)
+
+					if travelTime > maximumTime {
+						maximumTime = travelTime
+					}
+
+					pipeMovementAnimations = append(pipeMovementAnimations, PipeMovementAnimation{
+						X:          x,
+						StartY:     y,
+						EndY:       resetPosition,
+						TravelTime: travelTime,
+					})
+
 					y = resetPosition - 1
+
 				} else {
 					resetPosition++
 				}
@@ -136,15 +208,35 @@ func (b *Board) addMissingPipesToBoard() {
 		}
 	}
 
+	//Fills all Gaps, assumes once a gap is found the rest is also empty
 	for x := 0; x < len(b.Cells); x++ {
-		for y := 0; y < len(b.Cells[x]); y++ {
+		depth := 0
+		height := len(b.Cells[x])
+		for y := 0; y < height; y++ {
 			if b.Cells[x][y] == nil {
 				newPipe := newRandomizedPipe(x, y, b.NumberOfColumns)
 				b.Cells[x][y] = &newPipe
+
+				startY := (height) + (y - depth)
+				endY := y
+				travelTime := getTravelTime(startY - endY)
+
+				if travelTime > maximumTime {
+					maximumTime = travelTime
+				}
+				pipeMovementAnimations = append(pipeMovementAnimations, PipeMovementAnimation{
+					X:          x,
+					StartY:     startY,
+					EndY:       endY,
+					TravelTime: travelTime,
+				})
+			} else {
+				depth++
 			}
 		}
 	}
 
+	return
 	//newPipe := newRandomizedPipe(x, resetPosition, b.NumberOfColumns)
 	//b.Cells[x][resetPosition] = &newPipe
 }
@@ -165,6 +257,9 @@ func (b *Board) findAllClosedPipeTrees() []*pipeTree {
 
 			visitedPoints[point{x, y}] = true
 			rootPipeTree := newPipeTree(b.Cells[x][y], x, y)
+
+			//a, _ := json.Marshal(rootPipeTree)
+			//fmt.Println(rootPipeTree.x, ",", rootPipeTree.y, " Type: ", rootPipeTree.Type, " Direction: ", rootPipeTree.Direction)
 
 			isClosedTree := traversePipeTreeToCheckForClosedConnection(&rootPipeTree, visitedPoints, b)
 
@@ -308,6 +403,8 @@ type Pipe struct {
 	Type      PipeType
 	Direction PipeDirection
 	Level     PipeLevel
+	X         int
+	Y         int
 }
 
 type DestroyedPipe struct {
