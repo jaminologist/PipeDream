@@ -82,14 +82,10 @@ func set_pipeColor(pipeColor: int):
              get_node("Sprite").modulate = pipe_color_3
     
     
-func set_direction(direction):
-    
+func set_direction(direction):   
     self.direction = direction
     get_node("Sprite").rotation_degrees = direction
     
-func randomize_direction():
-    var directions = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT]
-    set_direction(directions[randi() % directions.size()])
     
 #Sets the size of the texture inside the sprite to the specified width and height
 func set_size(width: float, height: float):
@@ -103,61 +99,11 @@ func set_size(width: float, height: float):
     self.scale = newScale
     #$Sprite.scale = self.scale 
 
-#Rotates the Pipe in a clockwise direciton 90 degrees
-func rotate_pipe():
-    match direction:
-        Direction.UP:
-            set_direction(Direction.RIGHT)
-        Direction.RIGHT:
-            set_direction(Direction.DOWN)
-        Direction.DOWN:
-            set_direction(Direction.LEFT)
-        Direction.LEFT:
-            set_direction(Direction.UP)
-
-#Returns which column and row this pipe points to from the give column and row
-func points_to(column: int, row: int) -> Array:
-    
-    match type:
-        PipeType.END, PipeType.END_EXPLOSION_2, PipeType.END_EXPLOSION_3:
-            match direction:
-                Direction.UP:
-                    return [Vector2(column, row - 1)]
-                Direction.DOWN:
-                    return [Vector2(column, row + 1)]
-                Direction.LEFT:
-                    return [Vector2(column - 1, row)]
-                Direction.RIGHT:
-                    return [Vector2(column + 1, row)]
-        PipeType.LINE:
-            match direction: 
-                Direction.UP, Direction.DOWN:
-                    return [Vector2(column, row + 1), Vector2(column, row - 1)]
-                Direction.RIGHT, Direction.LEFT:
-                    return [Vector2(column + 1, row), Vector2(column - 1, row)]
-        PipeType.L_PIPE:
-            match direction: 
-                Direction.UP:
-                    return [Vector2(column + 1, row), Vector2(column, row - 1)]
-                Direction.DOWN:
-                    return [Vector2(column - 1, row), Vector2(column, row + 1)]
-                Direction.LEFT:
-                    return [Vector2(column - 1, row), Vector2(column, row - 1)]
-                Direction.RIGHT:
-                    return [Vector2(column + 1, row), Vector2(column, row + 1)]          
-    return []
     
 func _physics_process(delta):
     
     if is_moving:
-        
-        
         velocity = Vector2(0, (destination.y - startPosition.y) * (delta / travel_time))
-        #print("Vectors!", destination, position, destination - position, velocity)
-       # targetDistanceY = startPosition.y - destination.y
-       # print((destination - startPosition).length())
-       # print((destination - position).length())
-        #if (startPosition - position).length() < (startPosition - destination).length():
         position += velocity 
         
         if (startPosition - position).length() > (startPosition - destination).length():
