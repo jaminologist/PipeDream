@@ -105,8 +105,7 @@ var level3Size = 6
 
 //NewBoard returns a new board with the given number of rows and columns and radomized set of pipes
 func NewBoard(numberOfColumns int, numberOfRows int) Board {
-	numberOfColumns = 6
-	numberOfRows = 6
+
 	cells := make([][]*Pipe, numberOfColumns)
 
 	for x := 0; x < numberOfColumns; x++ {
