@@ -236,7 +236,6 @@ func (g *SinglePlayerBlitzGame) Run() {
 
 			g.score += 1250 * pipesDestroyed
 
-			fmt.Println(g.score)
 			gameState := SinglePlayerBlitzGameState{
 				BoardReports: boardReports,
 				Score:        g.score,

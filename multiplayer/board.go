@@ -105,8 +105,7 @@ var level3Size = 6
 
 //NewBoard returns a new board with the given number of rows and columns and radomized set of pipes
 func NewBoard(numberOfColumns int, numberOfRows int) Board {
-	numberOfColumns = 6
-	numberOfRows = 6
+
 	cells := make([][]*Pipe, numberOfColumns)
 
 	for x := 0; x < numberOfColumns; x++ {
@@ -413,6 +412,7 @@ func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementA
 		height := len(b.Cells[x])
 		for y := 0; y < height; y++ {
 			if b.Cells[x][y] == nil {
+
 				newPipe := newRandomizedPipe(x, y, b.NumberOfColumns)
 				b.Cells[x][y] = &newPipe
 
