@@ -110,8 +110,6 @@ OuterLoop:
 		case messageFromPlayer := <-l.boardcast:
 			for player := range l.players {
 				if messageFromPlayer.player != player {
-					//fmt.Println("Message??")
-
 					if err := player.conn.WriteMessage(messageFromPlayer.messageType, messageFromPlayer.message); err != nil {
 						log.Println(err)
 						return

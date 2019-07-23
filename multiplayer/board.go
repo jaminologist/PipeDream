@@ -413,6 +413,7 @@ func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementA
 		height := len(b.Cells[x])
 		for y := 0; y < height; y++ {
 			if b.Cells[x][y] == nil {
+
 				newPipe := newRandomizedPipe(x, y, b.NumberOfColumns)
 				b.Cells[x][y] = &newPipe
 
