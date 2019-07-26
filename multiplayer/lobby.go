@@ -142,6 +142,8 @@ func (l *Lobby) isFull() bool {
 	return true
 }
 
+const SINGLEPLAYERBLITZGAMETIMELIMIT = 90
+
 type SinglePlayerLobby struct {
 	player *Player
 
@@ -197,7 +199,7 @@ func (l *SinglePlayerLobby) Run() {
 			message:     []byte("found_lobby"),
 		}
 
-		l.game = NewSinglePlayerBlitzGame(l, 90*time.Second)
+		l.game = NewSinglePlayerBlitzGame(l, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
 		go l.game.Run()
 	}()
 
