@@ -15,7 +15,7 @@ signal pipe_touch
 signal pipes_destroyed(number)
 signal explosive_pipe_destroyed(power, time)
 
-var pipe_preload = preload("res://entities/pipes/pipe.tscn")
+var pipe_preload = preload("res://entities/pipes/Pipe.tscn")
 
 var column
 var row
