@@ -14,7 +14,7 @@ border_width_right = 5
 border_width_bottom = 5
 border_color = Color( 0.396078, 0.831373, 1, 1 )
 
-[node name="Play" type="Control"]
+[node name="2PlayerVersus" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
@@ -162,6 +162,5 @@ text = "Main Menu"
 [node name="CameraShake2D" parent="." instance=ExtResource( 5 )]
 [connection signal="explosive_pipe_destroyed" from="Grid" to="." method="_on_Grid_explosive_pipe_destroyed"]
 [connection signal="pipe_touch" from="Grid" to="." method="_on_Grid_pipe_touch"]
-[connection signal="pipes_destroyed" from="Grid" to="." method="_on_Grid_pipes_destroyed"]
 [connection signal="pressed" from="VictoryCenterContainer/PanelContainer/VBoxContainer/RetryButton" to="." method="_on_RetryButton_pressed"]
 [connection signal="pressed" from="VictoryCenterContainer/PanelContainer/VBoxContainer/MainMenuButton" to="." method="_on_MainMenuButton_pressed"]

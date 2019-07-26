@@ -45,7 +45,8 @@ func _process(delta):
             boardReport["DestroyedPipes"] =  null
             
         if boardReport.get("PipeMovementAnimations", null) != null:
-            load_board_into_grid(boardReport.get("Board"))
+            load_board_into_grid(boardReport.get("Board")) #Note a load the board here so the animations is correct
+            #But there may not be a need to load the board again on the top. 
             load_pipe_movement_animation(boardReport.get("PipeMovementAnimations", []))
             boardReport["PipeMovementAnimations"] =  null
     else:
@@ -175,9 +176,16 @@ func on_mouse_click():
         var mouse_local_position = get_local_mouse_position()
         var mouse_grid_position = pixel_to_grid(mouse_local_position.x, mouse_local_position.y)
         
+        var gridX = mouse_grid_position.x
+        var gridY = mouse_grid_position.y
+        
         if board != null:
-            if contains(mouse_grid_position.x, mouse_grid_position.y, board):   
-                emit_signal("pipe_touch", mouse_grid_position.x, mouse_grid_position.y)
+            if contains(gridX, gridY, board):   
+                #var start = OS.get_ticks_usec()
+                self.board[gridX][gridY].rotate_pipe()
+                emit_signal("pipe_touch", gridX, gridY)
+                #var elapsed = OS.get_ticks_usec() - start
+                #print("rotate pipe and emit signal:", elapsed)
 
 func get_new_pipe_instance(pipeType: int):
     var pipe = pipe_preload.instance()

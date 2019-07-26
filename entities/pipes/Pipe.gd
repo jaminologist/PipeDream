@@ -111,4 +111,16 @@ func _physics_process(delta):
             emit_signal("pipe_stop")
             position = destination
             velocity = Vector2()
+            
+#Rotates the Pipe in a clockwise direciton 90 degrees
+func rotate_pipe():
+    match direction:
+        Direction.UP:
+            set_direction(Direction.RIGHT)
+        Direction.RIGHT:
+            set_direction(Direction.DOWN)
+        Direction.DOWN:
+            set_direction(Direction.LEFT)
+        Direction.LEFT:
+            set_direction(Direction.UP)
         
