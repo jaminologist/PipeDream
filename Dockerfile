@@ -4,7 +4,7 @@ RUN mkdir /pipedream-website
 WORKDIR /pipedream-website
 
 COPY go.mod .
-COPY go.sum .
+#COPY go.sum .
 
 RUN git version
 RUN go mod download
