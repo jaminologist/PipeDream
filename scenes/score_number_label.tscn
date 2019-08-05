@@ -1,7 +1,8 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://assets/fonts/Roboto-Black.tres" type="DynamicFont" id=1]
-[ext_resource path="res://Scenes/Score_Number.gd" type="Script" id=2]
+[ext_resource path="res://scenes/score_number.gd" type="Script" id=2]
+
 
 [node name="Score_Number_Label" type="Label"]
 margin_top = 45.0

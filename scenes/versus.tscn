@@ -1,11 +1,14 @@
 [gd_scene load_steps=8 format=2]
 
-[ext_resource path="res://Scenes/Versus.gd" type="Script" id=1]
-[ext_resource path="res://entities/grid/Grid.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scenes/versus.gd" type="Script" id=1]
+[ext_resource path="res://entities/grid/grid.tscn" type="PackedScene" id=2]
 [ext_resource path="res://assets/fonts/Roboto-Black.tres" type="DynamicFont" id=3]
-[ext_resource path="res://Scenes/Score_Number_Label.tscn" type="PackedScene" id=4]
+[ext_resource path="res://scenes/score_number_label.tscn" type="PackedScene" id=4]
 [ext_resource path="res://scenes/enemy_board_center_container.tscn" type="PackedScene" id=5]
 [ext_resource path="res://scenes/camera_shake_2d.tscn" type="PackedScene" id=6]
+
+
+
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0, 0, 0, 0.807843 )

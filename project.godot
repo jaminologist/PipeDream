@@ -21,7 +21,7 @@ config/icon="res://icon.png"
 
 [autoload]
 
-PipeType="*res://global/PipeType.gd"
+PipeType="*res://global/pipetype.gd"
 
 [display]
 
