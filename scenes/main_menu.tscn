@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://scenes/main_menu.gd" type="Script" id=1]
-[ext_resource path="res://assets/fonts/Roboto-Black.tres" type="DynamicFont" id=2]
+[ext_resource path="res://assets/fonts/Roboto-Black.ttf" type="DynamicFontData" id=2]
+
+[sub_resource type="DynamicFont" id=1]
+size = 30
+font_data = ExtResource( 2 )
 
 [node name="MainMenu" type="Control"]
 anchor_right = 1.0
@@ -27,7 +31,7 @@ margin_bottom = -60.0
 [node name="Title" type="Label" parent="MenuGroup"]
 margin_right = 440.0
 margin_bottom = 41.0
-custom_fonts/font = ExtResource( 2 )
+custom_fonts/font = SubResource( 1 )
 text = "P I P E D R E A M "
 align = 1
 
@@ -49,7 +53,7 @@ margin_left = 166.0
 margin_right = 274.0
 margin_bottom = 47.0
 size_flags_horizontal = 4
-custom_fonts/font = ExtResource( 2 )
+custom_fonts/font = SubResource( 1 )
 text = "Classic"
 flat = true
 
@@ -59,7 +63,7 @@ margin_top = 57.0
 margin_right = 256.0
 margin_bottom = 104.0
 size_flags_horizontal = 4
-custom_fonts/font = ExtResource( 2 )
+custom_fonts/font = SubResource( 1 )
 text = "Blitz"
 flat = true
 
@@ -69,7 +73,7 @@ margin_top = 114.0
 margin_right = 272.0
 margin_bottom = 161.0
 size_flags_horizontal = 4
-custom_fonts/font = ExtResource( 2 )
+custom_fonts/font = SubResource( 1 )
 text = "Versus"
 flat = true
 
@@ -79,7 +83,7 @@ margin_top = 171.0
 margin_right = 279.0
 margin_bottom = 218.0
 size_flags_horizontal = 4
-custom_fonts/font = ExtResource( 2 )
+custom_fonts/font = SubResource( 1 )
 text = "Options"
 flat = true
 [connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/ClassicButton" to="." method="_on_ClassicButton_pressed"]
