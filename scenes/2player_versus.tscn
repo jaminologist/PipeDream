@@ -1,10 +1,10 @@
 [gd_scene load_steps=7 format=2]
 
-[ext_resource path="res://Scenes/Classic.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/Play.gd" type="Script" id=1]
 [ext_resource path="res://entities/grid/Grid.tscn" type="PackedScene" id=2]
 [ext_resource path="res://assets/fonts/Roboto-Black.tres" type="DynamicFont" id=3]
 [ext_resource path="res://Scenes/Score_Number_Label.tscn" type="PackedScene" id=4]
-[ext_resource path="res://Scenes/CameraShake2D.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scenes/camera_shake_2d.tscn" type="PackedScene" id=5]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0, 0, 0, 0.807843 )
@@ -14,20 +14,22 @@ border_width_right = 5
 border_width_bottom = 5
 border_color = Color( 0.396078, 0.831373, 1, 1 )
 
-[node name="Classic" type="Control"]
+[node name="2PlayerVersus" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
-numberOfMoves = 45
 
 [node name="ColorRect" type="ColorRect" parent="."]
-margin_right = 480.0
-margin_bottom = 730.0
+margin_left = -110.0
+margin_top = -170.0
+margin_right = 370.0
+margin_bottom = 560.0
+rect_scale = Vector2( 1.5, 1.5 )
 color = Color( 0, 0, 0, 1 )
 
 [node name="Grid" parent="." instance=ExtResource( 2 )]
-position = Vector2( 50, 177 )
-x_position = 30
+position = Vector2( 25, 300 )
+cell_size = 52.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 anchor_right = 1.0
@@ -37,49 +39,49 @@ margin_bottom = 131.0
 margin_right = 480.0
 margin_bottom = 41.0
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer/TitleContainer"]
+[node name="Label" type="Label" parent="VBoxContainer/TitleContainer"]
 margin_right = 480.0
 margin_bottom = 41.0
 custom_fonts/font = ExtResource( 3 )
-text = "Classic"
+text = "Blitz"
 align = 1
 valign = 1
 
-[node name="VBoxContainer3" type="HBoxContainer" parent="VBoxContainer"]
+[node name="VBoxScoreTimeContainer" type="HBoxContainer" parent="VBoxContainer"]
 margin_top = 45.0
 margin_right = 480.0
 margin_bottom = 131.0
 alignment = 1
 
-[node name="VBoxMovesContainer" type="VBoxContainer" parent="VBoxContainer/VBoxContainer3"]
+[node name="VBoxTimeContainer" type="VBoxContainer" parent="VBoxContainer/VBoxScoreTimeContainer"]
 margin_right = 238.0
 margin_bottom = 86.0
 size_flags_horizontal = 3
 
-[node name="Moves_Label" type="Label" parent="VBoxContainer/VBoxContainer3/VBoxMovesContainer"]
+[node name="Time_Label" type="Label" parent="VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer"]
 margin_right = 238.0
 margin_bottom = 41.0
 custom_fonts/font = ExtResource( 3 )
-text = "Moves"
+text = "Time"
 align = 1
 valign = 1
 
-[node name="Moves_Counter" type="Label" parent="VBoxContainer/VBoxContainer3/VBoxMovesContainer"]
+[node name="Time_Counter" type="Label" parent="VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer"]
 margin_top = 45.0
 margin_right = 238.0
 margin_bottom = 86.0
 custom_fonts/font = ExtResource( 3 )
-text = "0"
+text = "0:00"
 align = 1
 valign = 1
 
-[node name="VBoxScoreContainer" type="VBoxContainer" parent="VBoxContainer/VBoxContainer3"]
+[node name="VBoxScoreContainer" type="VBoxContainer" parent="VBoxContainer/VBoxScoreTimeContainer"]
 margin_left = 242.0
 margin_right = 480.0
 margin_bottom = 86.0
 size_flags_horizontal = 3
 
-[node name="Score_Label" type="Label" parent="VBoxContainer/VBoxContainer3/VBoxScoreContainer"]
+[node name="Score_Label" type="Label" parent="VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer"]
 margin_right = 238.0
 margin_bottom = 41.0
 custom_fonts/font = ExtResource( 3 )
@@ -87,10 +89,9 @@ text = "Score"
 align = 1
 valign = 1
 
-[node name="Score_Number_Label2" parent="VBoxContainer/VBoxContainer3/VBoxScoreContainer" instance=ExtResource( 4 )]
+[node name="Score_Number_Label" parent="VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer" instance=ExtResource( 4 )]
 
 [node name="VictoryCenterContainer" type="CenterContainer" parent="."]
-editor/display_folded = true
 anchor_right = 1.0
 anchor_bottom = 1.0
 
@@ -159,9 +160,7 @@ shortcut_in_tooltip = false
 text = "Main Menu"
 
 [node name="CameraShake2D" parent="." instance=ExtResource( 5 )]
-[connection signal="connection_found" from="Grid" to="." method="_on_Grid_connection_found"]
 [connection signal="explosive_pipe_destroyed" from="Grid" to="." method="_on_Grid_explosive_pipe_destroyed"]
 [connection signal="pipe_touch" from="Grid" to="." method="_on_Grid_pipe_touch"]
-[connection signal="pipes_destroyed" from="Grid" to="." method="_on_Grid_pipes_destroyed"]
 [connection signal="pressed" from="VictoryCenterContainer/PanelContainer/VBoxContainer/RetryButton" to="." method="_on_RetryButton_pressed"]
 [connection signal="pressed" from="VictoryCenterContainer/PanelContainer/VBoxContainer/MainMenuButton" to="." method="_on_MainMenuButton_pressed"]

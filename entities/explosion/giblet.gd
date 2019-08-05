@@ -10,7 +10,7 @@ var velocity
 
 func _ready():
     velocity = Vector2(speed * cos(deg2rad(angleInDegrees)), speed * sin(deg2rad(angleInDegrees)))
-    $Tween.interpolate_property($Sprite, "modulate", Color(1, 1, 1, 1), Color(1, 1, 1, 0), fade, 
+    $Tween.interpolate_property($GibletSprite, "modulate", Color(1, 1, 1, 1), Color(1, 1, 1, 0), fade, 
     Tween.TRANS_QUART, Tween.EASE_IN)
     $Tween.start()
 

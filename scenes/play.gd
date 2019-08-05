@@ -18,7 +18,7 @@ func _ready():
 func _process(delta):
     poll_client_and_update()
     if Input.is_action_just_pressed("ui_cancel"):
-        get_tree().change_scene("res://Scenes/MainMenu.tscn")
+        get_tree().change_scene("res://scenes/main_menu.tscn")
         
         
 func poll_client_and_update():
@@ -88,14 +88,14 @@ func _on_RetryButton_pressed():
     get_tree().reload_current_scene()
 
 func _on_MainMenuButton_pressed():
-    get_tree().change_scene("res://Scenes/MainMenu.tscn")
+    get_tree().change_scene("res://scenes/main_menu.tscn")
 
 
 func _on_Grid_explosive_pipe_destroyed(power, time):
     $CameraShake2D.start_camera_shake(power, 0.25)
     
 func _on_connection_error():
-    get_tree().change_scene("res://Scenes/MainMenu.tscn")
+    get_tree().change_scene("res://scenes/main_menu.tscn")
     pass
 
 

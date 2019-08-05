@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://Scenes/WaitingForPlayersScreen.gd" type="Script" id=1]
+[ext_resource path="res://scenes/waiting_for_players_screen.gd" type="Script" id=1]
 [ext_resource path="res://assets/fonts/Roboto-Black.tres" type="DynamicFont" id=2]
-[ext_resource path="res://Scenes/2PlayerVersus.tscn" type="PackedScene" id=3]
+[ext_resource path="res://scenes/2player_versus.tscn" type="PackedScene" id=3]
 
 [node name="Control" type="Control"]
 anchor_right = 1.0
