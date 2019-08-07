@@ -199,7 +199,7 @@ func (l *SinglePlayerLobby) Run() {
 			message:     []byte("found_lobby"),
 		}
 
-		l.game = NewSinglePlayerBlitzGame(l, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
+		l.game = NewSinglePlayerBlitzGame(l.boardcastAll, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
 		go l.game.Run()
 	}()
 
@@ -224,6 +224,118 @@ OuterLoop:
 			if err := l.player.conn.WriteMessage(message.messageType, message.message); err != nil {
 				log.Println(err)
 				return
+			}
+		}
+	}
+
+	fmt.Println("Lobby Closed")
+
+}
+
+type VersusLobby struct {
+	players map[*Player](bool)
+	games   map[*Player](*SinglePlayerBlitzGame)
+
+	register   chan *Player
+	unregister chan *Player
+
+	playerMessageChannel chan *MessageFromPlayer
+
+	boardcastAll chan *Message
+
+	manager *VersusLobbyManager
+
+	isFull bool
+}
+
+func NewVersusLobby(vlm *VersusLobbyManager) *VersusLobby {
+
+	return &VersusLobby{
+		players:              make(map[*Player](bool)),
+		games:                make(map[*Player](*SinglePlayerBlitzGame)),
+		register:             make(chan *Player),
+		unregister:           make(chan *Player),
+		playerMessageChannel: make(chan *MessageFromPlayer),
+		boardcastAll:         make(chan *Message),
+		manager:              vlm,
+	}
+
+}
+
+func (lobby *VersusLobby) AddPlayer(p *Player) bool {
+
+	if len(lobby.players) < 2 {
+
+		p.PlayerRegister = lobby
+		p.PlayerMessageReceiver = lobby
+
+		lobby.players[p] = true
+		if len(lobby.players) >= 2 {
+			lobby.isFull = true
+		}
+
+		//go p.run()
+		return true
+	}
+	return false
+}
+
+func (lobby *VersusLobby) Unregister(player *Player) {
+	lobby.unregister <- player
+}
+
+func (lobby *VersusLobby) SendMessage(message *MessageFromPlayer) {
+	select {
+	case lobby.playerMessageChannel <- message:
+	}
+}
+
+func (lobby *VersusLobby) Run() {
+
+	for player := range lobby.players {
+		go player.run()
+		lobby.games[player] = NewSinglePlayerBlitzGame(lobby, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
+	}
+
+	go func() {
+		lobby.boardcastAll <- &Message{
+			messageType: websocket.TextMessage,
+			message:     []byte("found_lobby"),
+		}
+
+		l.game = NewSinglePlayerBlitzGame(l, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
+		go l.game.Run()
+	}()
+
+OuterLoop:
+	for {
+		select {
+
+		case unRegisteringPlayer := <-lobby.unregister:
+
+			if _, ok := lobby.players[unRegisteringPlayer]; ok {
+				delete(lobby.players, unRegisteringPlayer)
+			}
+
+			if len(lobby.players) <= 0 {
+				break OuterLoop
+			}
+
+		case messageFromPlayer := <-lobby.playerMessageChannel:
+			var input BoardInput
+			err := json.Unmarshal(messageFromPlayer.message, &input)
+
+			if err == nil {
+				lobby.games[messageFromPlayer.player].playerInputChannel <- &input
+			}
+
+		case message := <-lobby.boardcastAll:
+
+			for player := range lobby.players {
+				if err := player.conn.WriteMessage(message.messageType, message.message); err != nil {
+					log.Println(err)
+					//return
+				}
 			}
 		}
 	}

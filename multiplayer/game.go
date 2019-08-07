@@ -18,6 +18,14 @@ type GameState struct {
 	IsOver bool
 }
 
+type TimeLimit struct {
+	Time time.Duration
+}
+
+type GameOver struct {
+	Time time.Duration
+}
+
 func NewGame(l *Lobby, timeLimit time.Duration) *Game {
 
 	return &Game{
@@ -50,13 +58,25 @@ func (g *Game) Run() {
 }
 
 type SinglePlayerBlitzGame struct {
-	singlePlayerLobby *SinglePlayerLobby
-	board             *Board
-	timeLimit         time.Duration
-	isOver            bool
-	score             int
+	board     *Board
+	timeLimit time.Duration
+	isOver    bool
+	score     int
 
 	playerInputChannel   chan *BoardInput
+	playerOutputChannel  chan *Message
+	gameOverInputChannel chan bool
+}
+
+type VersusPlayerBlitzGame struct {
+	versusLobby VersusLobby
+	board       *Board
+	timeLimit   time.Duration
+	isOver      bool
+	score       int
+
+	playerInputChannel   chan *BoardInput
+	playerOutputChannel  chan *Message
 	gameOverInputChannel chan bool
 }
 
@@ -68,26 +88,18 @@ type SinglePlayerBlitzGameState struct {
 	DestroyedPipes []DestroyedPipe
 }
 
-func NewSinglePlayerBlitzGame(spl *SinglePlayerLobby, timeLimit time.Duration) *SinglePlayerBlitzGame {
+func NewSinglePlayerBlitzGame(playerOutputChannel chan *Message, timeLimit time.Duration) *SinglePlayerBlitzGame {
 
 	board := NewBoard(7, 8)
 
 	return &SinglePlayerBlitzGame{
-		singlePlayerLobby:    spl,
 		timeLimit:            timeLimit,
 		board:                &board,
 		playerInputChannel:   make(chan *BoardInput),
+		playerOutputChannel:  playerOutputChannel,
 		gameOverInputChannel: make(chan bool),
 	}
 
-}
-
-type TimeLimit struct {
-	Time time.Duration
-}
-
-type GameOver struct {
-	Time time.Duration
 }
 
 func (g *SinglePlayerBlitzGame) Run() {
@@ -156,7 +168,7 @@ func (g *SinglePlayerBlitzGame) send(v interface{}) {
 	if err != nil {
 		log.Println(err)
 	} else {
-		g.singlePlayerLobby.boardcastAll <- &Message{messageType: websocket.TextMessage, message: messageBytes}
+		g.playerOutputChannel <- &Message{messageType: websocket.TextMessage, message: messageBytes}
 	}
 
 }
