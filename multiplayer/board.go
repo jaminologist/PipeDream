@@ -180,6 +180,13 @@ func CopyBoard(b *Board) Board {
 	return newBoard
 }
 
+//RotatePipeClockwise Rotates the pipe at the given x and y clockwise if the board contains the given x and y
+func (b *Board) RotatePipeClockwise(x int, y int) {
+	if b.containsPoint(&point{x, y}) {
+		b.Cells[x][y].RotateClockWise()
+	}
+}
+
 //UpdateBoardPipeConnections loops through the board and checks to see which pipes are connected together
 //Returns true if a connections is found
 func (b *Board) UpdateBoardPipeConnections() []BoardReport {

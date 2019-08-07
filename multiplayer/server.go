@@ -155,6 +155,11 @@ type BoardInput struct {
 	Y int
 }
 
+type PlayerBoardInput struct {
+	player *Player
+	BoardInput
+}
+
 type MessageFromPlayer struct {
 	messageType int
 	message     []byte

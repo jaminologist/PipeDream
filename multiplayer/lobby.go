@@ -234,12 +234,13 @@ OuterLoop:
 
 type VersusLobby struct {
 	players map[*Player](bool)
-	games   map[*Player](*SinglePlayerBlitzGame)
+	game    *VersusPlayerBlitzGame
 
 	register   chan *Player
 	unregister chan *Player
 
-	playerMessageChannel chan *MessageFromPlayer
+	messagesToPlayersChannel chan *MessageFromPlayer
+	playerMessageChannel     chan *MessageFromPlayer
 
 	boardcastAll chan *Message
 
@@ -251,13 +252,13 @@ type VersusLobby struct {
 func NewVersusLobby(vlm *VersusLobbyManager) *VersusLobby {
 
 	return &VersusLobby{
-		players:              make(map[*Player](bool)),
-		games:                make(map[*Player](*SinglePlayerBlitzGame)),
-		register:             make(chan *Player),
-		unregister:           make(chan *Player),
-		playerMessageChannel: make(chan *MessageFromPlayer),
-		boardcastAll:         make(chan *Message),
-		manager:              vlm,
+		players:                  make(map[*Player](bool)),
+		register:                 make(chan *Player),
+		unregister:               make(chan *Player),
+		messagesToPlayersChannel: make(chan *MessageFromPlayer),
+		playerMessageChannel:     make(chan *MessageFromPlayer),
+		boardcastAll:             make(chan *Message),
+		manager:                  vlm,
 	}
 
 }
@@ -294,17 +295,16 @@ func (lobby *VersusLobby) Run() {
 
 	for player := range lobby.players {
 		go player.run()
-		lobby.games[player] = NewSinglePlayerBlitzGame(lobby, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
 	}
+
+	lobby.game = NewVersusPlayerBlitzGame(lobby, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
 
 	go func() {
 		lobby.boardcastAll <- &Message{
 			messageType: websocket.TextMessage,
 			message:     []byte("found_lobby"),
 		}
-
-		l.game = NewSinglePlayerBlitzGame(l, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
-		go l.game.Run()
+		go lobby.game.Run()
 	}()
 
 OuterLoop:
@@ -321,18 +321,22 @@ OuterLoop:
 				break OuterLoop
 			}
 
+		case messageToPlayer := <-lobby.messagesToPlayersChannel:
+			if _, ok := lobby.players[messageToPlayer.player]; ok {
+				if err := messageToPlayer.player.conn.WriteMessage(messageToPlayer.messageType, messageToPlayer.message); err != nil {
+					log.Println(err)
+				}
+			}
 		case messageFromPlayer := <-lobby.playerMessageChannel:
 			var input BoardInput
 			err := json.Unmarshal(messageFromPlayer.message, &input)
-
 			if err == nil {
-				lobby.games[messageFromPlayer.player].playerInputChannel <- &input
+				lobby.game.playerInputChannel <- &PlayerBoardInput{player: messageFromPlayer.player, BoardInput: input}
 			}
-
-		case message := <-lobby.boardcastAll:
+		case messageToAll := <-lobby.boardcastAll:
 
 			for player := range lobby.players {
-				if err := player.conn.WriteMessage(message.messageType, message.message); err != nil {
+				if err := player.conn.WriteMessage(messageToAll.messageType, messageToAll.message); err != nil {
 					log.Println(err)
 					//return
 				}
