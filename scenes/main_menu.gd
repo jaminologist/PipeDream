@@ -12,4 +12,4 @@ func _on_ClassicButton_pressed():
 
 
 func _on_VersusButton_pressed():
-    get_tree().change_scene("res://scenes/versus.tscn")
+    get_tree().change_scene("res://scenes/2player_versus_container.tscn")

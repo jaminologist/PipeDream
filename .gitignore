@@ -9,3 +9,5 @@
 # System/tool-specific ignores
 .directory
 *~
+
+exports/

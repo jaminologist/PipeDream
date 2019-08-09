@@ -9,8 +9,7 @@ func _ready():
     get_node("VictoryCenterContainer").hide()
     #update_time_counter_text(90)
     
-    client.connect_to_url("ws://165.22.120.163:5080/singlePlayerBlitzGame")
-   # client.connect_to_url("ws://192.168.99.100:5080/singlePlayerBlitzGame")
+    client.connect_to_url(Connections.VERSUS_PLAYER_WEBSOCKET_STRING)
     print(client.get_connection_status())
     client.connect("connection_failed", self, "_on_connection_error")
     pass 
@@ -22,6 +21,8 @@ func _process(delta):
         
         
 func poll_client_and_update():
+	
+	
     client.poll()
     
     if client.get_connection_status() == client.CONNECTION_DISCONNECTED:

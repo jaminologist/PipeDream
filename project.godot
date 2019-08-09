@@ -22,6 +22,7 @@ config/icon="res://icon.png"
 [autoload]
 
 PipeType="*res://global/pipetype.gd"
+Connections="*res://global/connection_strings.gd"
 
 [display]
 
