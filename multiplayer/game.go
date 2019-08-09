@@ -168,32 +168,59 @@ func calculateScoreFromBoardReports(boardReports []BoardReport) int {
 }
 
 type VersusPlayerBlitzGame struct {
-	versusLobby *VersusLobby
-	boards      map[*Player](*Board)
-	scores      map[*Player](int)
-	timeLimit   time.Duration
-	isOver      bool
+	versusLobby           *VersusLobby
+	playerGameInformation map[*Player](*VersusPlayerBlitzGamePlayerInformation)
+	timeLimit             time.Duration
+	isOver                bool
 
 	playerInputChannel   chan *PlayerBoardInput
 	gameOverInputChannel chan bool
 }
 
+type VersusPlayerBlitzGamePlayerInformation struct {
+	ID    int
+	Board *Board
+	Score int
+}
+
+type VersusPlayerBlitzGamePlayerInformationSentToPlayers struct {
+	PlayerID          int
+	PlayerInformation []*VersusPlayerBlitzGamePlayerInformation
+	Time              time.Duration
+}
+
+type VersusPlayerBlitzGameState struct {
+	ID int
+
+	Board          *Board
+	BoardReports   []BoardReport
+	Score          int
+	IsOver         bool
+	DestroyedPipes []DestroyedPipe
+}
+
 func NewVersusPlayerBlitzGame(vl *VersusLobby, timeLimit time.Duration) *VersusPlayerBlitzGame {
 
-	playerBoards := make(map[*Player](*Board))
+	playerGameInformation := make(map[*Player](*VersusPlayerBlitzGamePlayerInformation))
 
+	i := 0
 	for player := range vl.players {
 		newBoard := NewBoard(7, 8)
 		newBoard.UpdateBoardPipeConnections() //Note: Need to add a way to generate a board where there are no connections straight away.
-		playerBoards[player] = &newBoard
+		playerGameInformation[player] = &VersusPlayerBlitzGamePlayerInformation{
+			i,
+			&newBoard,
+			0,
+		}
+		i++
 	}
 
 	return &VersusPlayerBlitzGame{
-		versusLobby:          vl,
-		boards:               playerBoards,
-		timeLimit:            timeLimit,
-		playerInputChannel:   make(chan *PlayerBoardInput),
-		gameOverInputChannel: make(chan bool),
+		versusLobby:           vl,
+		playerGameInformation: playerGameInformation,
+		timeLimit:             timeLimit,
+		playerInputChannel:    make(chan *PlayerBoardInput),
+		gameOverInputChannel:  make(chan bool),
 	}
 }
 
@@ -201,18 +228,30 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 
 	go func() {
 
-		for player, board := range vpbg.boards {
+		for player, info := range vpbg.playerGameInformation {
 			sendMessageToPlayer(&SinglePlayerBlitzGameState{
-				Board: board,
-				Score: vpbg.scores[player],
+				Board: info.Board,
+				Score: info.Score,
 			}, player, vpbg.versusLobby.messagesToPlayersChannel)
 		}
 
 		for !vpbg.isOver {
 			vpbg.timeLimit = vpbg.timeLimit - serverTick
-			sendMessageToAll(&TimeLimit{
-				Time: vpbg.timeLimit,
-			}, vpbg.versusLobby.boardcastAll)
+
+			playerInformationArray := make([]*VersusPlayerBlitzGamePlayerInformation, 0)
+
+			for _, info := range vpbg.playerGameInformation {
+				playerInformationArray = append(playerInformationArray, info)
+			}
+
+			for player, info := range vpbg.playerGameInformation {
+				sendMessageToPlayer(&VersusPlayerBlitzGamePlayerInformationSentToPlayers{
+					PlayerID:          info.ID,
+					PlayerInformation: playerInformationArray,
+					Time:              vpbg.timeLimit,
+				}, player, vpbg.versusLobby.messagesToPlayersChannel)
+			}
+
 			vpbg.isOver = vpbg.timeLimit <= 0
 			time.Sleep(serverTick)
 		}
@@ -226,11 +265,11 @@ OuterLoop:
 		case isOver := <-vpbg.gameOverInputChannel:
 			if isOver {
 
-				for player, board := range vpbg.boards {
+				for player, info := range vpbg.playerGameInformation {
 					sendMessageToPlayer(&SinglePlayerBlitzGameState{
-						Board:  board,
+						Board:  info.Board,
 						IsOver: vpbg.isOver,
-						Score:  vpbg.scores[player],
+						Score:  info.Score,
 					}, player, vpbg.versusLobby.messagesToPlayersChannel)
 				}
 				break OuterLoop
@@ -238,16 +277,16 @@ OuterLoop:
 		case playerBoardInput := <-vpbg.playerInputChannel:
 
 			player := playerBoardInput.player
-			board := vpbg.boards[player]
-			board.RotatePipeClockwise(playerBoardInput.X, playerBoardInput.Y)
+			info := vpbg.playerGameInformation[player]
+			info.Board.RotatePipeClockwise(playerBoardInput.X, playerBoardInput.Y)
 
-			boardReports := board.UpdateBoardPipeConnections()
+			boardReports := info.Board.UpdateBoardPipeConnections()
 
-			vpbg.scores[player] += calculateScoreFromBoardReports(boardReports)
+			info.Score += calculateScoreFromBoardReports(boardReports)
 
 			gameState := SinglePlayerBlitzGameState{
 				BoardReports: boardReports,
-				Score:        vpbg.scores[player],
+				Score:        info.Score,
 				IsOver:       vpbg.isOver,
 			}
 

@@ -16,6 +16,8 @@ type Server struct {
 	lobbyMap     map[*Lobby]bool
 	emptyLobbies []*Lobby
 
+	versusLobbyManager *VersusLobbyManager
+
 	// Register
 	register chan *Player
 
@@ -30,9 +32,12 @@ type Server struct {
 
 func NewServer() *Server {
 
+	versusLobbyManager := NewVersusLobbyManager()
+
 	return &Server{
 		lobbyMap:               make(map[*Lobby]bool),
 		emptyLobbies:           make([]*Lobby, 0),
+		versusLobbyManager:     &versusLobbyManager,
 		register:               make(chan *Player),
 		singlePlayerRegister:   make(chan *Player),
 		twoPlayerRegister:      make(chan *Player),
@@ -86,22 +91,12 @@ func (s *Server) FindTwoPlayerSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newPlayer := newPlayer(conn)
-	s.singlePlayerRegister <- newPlayer
+	s.twoPlayerRegister <- newPlayer
 	fmt.Println("Created Single player session")
 }
 
 func (s *Server) handleNewVersusConnection(player *Player) {
-	if !s.findVersusLobby(player) {
-		s.openVersusLobby(player)
-	}
-}
-
-func (s *Server) findVersusLobby(player *Player) bool {
-	return true
-}
-
-func (s *Server) openVersusLobby(player *Player) {
-
+	s.versusLobbyManager.RegisterPlayer(player)
 }
 
 //Run starts the Server. The server handles putting players into lobbies and starting their games
