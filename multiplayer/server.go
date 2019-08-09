@@ -1,7 +1,6 @@
 package multiplayer
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -33,6 +32,7 @@ type Server struct {
 func NewServer() *Server {
 
 	versusLobbyManager := NewVersusLobbyManager()
+	go versusLobbyManager.Run()
 
 	return &Server{
 		lobbyMap:               make(map[*Lobby]bool),
@@ -76,12 +76,11 @@ func (s *Server) CreateSinglePlayerSession(w http.ResponseWriter, r *http.Reques
 
 	newPlayer := newPlayer(conn)
 	s.singlePlayerRegister <- newPlayer
-	fmt.Println("Created Single player session")
+	log.Println("Created Single Player Session")
 }
 
 //FindTwoPlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for finding a two player mutiplayer session
 func (s *Server) FindTwoPlayerSession(w http.ResponseWriter, r *http.Request) {
-
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -92,11 +91,7 @@ func (s *Server) FindTwoPlayerSession(w http.ResponseWriter, r *http.Request) {
 
 	newPlayer := newPlayer(conn)
 	s.twoPlayerRegister <- newPlayer
-	fmt.Println("Created Single player session")
-}
-
-func (s *Server) handleNewVersusConnection(player *Player) {
-	s.versusLobbyManager.RegisterPlayer(player)
+	log.Println("Created Two Player Versus Session")
 }
 
 //Run starts the Server. The server handles putting players into lobbies and starting their games
@@ -112,10 +107,10 @@ func (s *Server) Run() {
 			singlePlayerLobby.AddPlayer(newSinglePlayer)
 			go singlePlayerLobby.Run()
 		case newVersusPlayer := <-s.twoPlayerRegister:
-			s.handleNewVersusConnection(newVersusPlayer)
+			s.versusLobbyManager.registerPlayer(newVersusPlayer)
 		}
 
-		if len(s.playersLookingForLobby) > 0 {
+		/*if len(s.playersLookingForLobby) > 0 {
 
 			for i := 0; i < len(s.playersLookingForLobby); i++ {
 				if len(s.emptyLobbies) == 0 {
@@ -134,7 +129,7 @@ func (s *Server) Run() {
 			}
 
 			s.playersLookingForLobby = make([]*Player, 0)
-		}
+		}*/
 
 	}
 
@@ -180,9 +175,9 @@ func NewVersusLobbyManager() VersusLobbyManager {
 	return VersusLobbyManager{
 		openVersusLobbies:   make([]*VersusLobby, 0),
 		closedVersusLobbies: make(map[*VersusLobby](bool)),
-
-		registerLobby:   make(chan *VersusLobby),
-		unregisterLobby: make(chan *VersusLobby),
+		playerHandler:       make(chan *Player),
+		registerLobby:       make(chan *VersusLobby),
+		unregisterLobby:     make(chan *VersusLobby),
 	}
 }
 
@@ -194,16 +189,22 @@ func (vlm *VersusLobbyManager) Register(vl *VersusLobby) {
 	vlm.registerLobby <- vl
 }
 
-func (vlm *VersusLobbyManager) RegisterPlayer(p *Player) {
+func (vlm *VersusLobbyManager) registerPlayer(p *Player) {
+	log.Println("Registering New Player To VersusLobby Manager...")
 	vlm.playerHandler <- p
 }
 
 func (vlm *VersusLobbyManager) Run() {
 
+	log.Println("Starting Versus Lobby Manager...")
+
 	for {
+		//log.Println("Spam city")
 		select {
 		case newPlayer := <-vlm.playerHandler:
+			log.Println("Handling New Player")
 			vlm.handleNewPlayer(newPlayer)
+
 		case registeringLobby := <-vlm.registerLobby:
 			_ = registeringLobby
 		case unregisteringLobby := <-vlm.unregisterLobby:
@@ -220,8 +221,11 @@ func (vlm *VersusLobbyManager) Run() {
 					log.Print("Removed Open Lobby, Address: ", unregisteringLobby)
 				}
 			}
+		default:
 		}
 	}
+
+	log.Println("Stopping Versus Lobby Manager...")
 
 }
 
@@ -233,6 +237,7 @@ func (vlm *VersusLobbyManager) handleNewPlayer(p *Player) {
 		if openLobby.isFull { //
 			vlm.closedVersusLobbies[openLobby] = true
 			vlm.openVersusLobbies = append(vlm.openVersusLobbies[:0], vlm.openVersusLobbies[0+1:]...) //Delete from open Lobbies
+			go openLobby.Run()                                                                        //Begin Lobby
 		}
 	} else {
 		newOpenLobby := NewVersusLobby(vlm)

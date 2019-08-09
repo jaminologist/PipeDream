@@ -300,6 +300,7 @@ func (lobby *VersusLobby) Run() {
 	lobby.game = NewVersusPlayerBlitzGame(lobby, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
 
 	go func() {
+		log.Println("Beginning Versus Game...")
 		lobby.boardcastAll <- &Message{
 			messageType: websocket.TextMessage,
 			message:     []byte("found_lobby"),
