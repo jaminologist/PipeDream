@@ -19,6 +19,11 @@ func _process(delta):
     if Input.is_action_just_pressed("ui_cancel"):
         get_tree().change_scene("res://scenes/main_menu.tscn")
         
+func set_client(client: WebSocketClient):
+    self.client = client
+    client.connect("connection_failed", self, "_on_connection_error")
+    
+        
         
 func poll_client_and_update():
     
@@ -44,6 +49,18 @@ func poll_client_and_update():
         
         if json.get("Time", null) != null:
             update_time_counter_text(json.get("Time"))
+            
+            #Get Array of Enemy Board
+        if json.get("EnemyInformation", null) != null:
+            var enemyInformation = json.get("EnemyInformation")
+            
+            enemyInformation as Dictionary
+            
+            if enemyInformation.get("Score", null) != null:
+                set_enemy_score(enemyInformation.get("Score"))
+            
+            
+            
             
         if json.get("Score", null) != null:
             set_score(json.get("Score", 0))
@@ -74,6 +91,10 @@ func open_score_screen():
     
 func set_score(score: int):
     get_node("VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer/Score_Number_Label").set_score(score)
+    self.score = str(score)
+    
+func set_enemy_score(score: int):
+    $VBoxContainer/HEnemyInformationContainer/VEnemyScoreBoxContainer/Score_Number_Label.set_score(score)
     self.score = str(score)
 
 func _on_BlitzTimer_timeout():

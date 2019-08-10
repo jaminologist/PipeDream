@@ -26,17 +26,19 @@ anchor_bottom = 1.0
 alignment = 1
 
 [node name="Title" type="Label" parent="WaitingForPlayersScreen/VBoxContainer"]
-margin_top = 330.0
+margin_top = 317.0
 margin_right = 480.0
-margin_bottom = 371.0
+margin_bottom = 358.0
 custom_fonts/font = ExtResource( 3 )
 text = "Looking For Players"
 align = 1
 
 [node name="Dots" type="Label" parent="WaitingForPlayersScreen/VBoxContainer"]
-margin_top = 375.0
+margin_top = 362.0
 margin_right = 480.0
-margin_bottom = 389.0
+margin_bottom = 403.0
+custom_fonts/font = ExtResource( 3 )
+align = 1
 
 [node name="TwoPlayerVersus" parent="." instance=ExtResource( 4 )]
 visible = false

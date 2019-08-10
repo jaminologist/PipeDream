@@ -7,4 +7,4 @@ var VERSUS_PLAYER_WEBSOCKET_STRING = WEBSOCKET_HEADER + "/versusBlitzGame"
 
 
 func _ready():
-	pass
+    pass
