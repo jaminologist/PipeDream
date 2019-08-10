@@ -184,9 +184,9 @@ type VersusPlayerBlitzGamePlayerInformation struct {
 }
 
 type VersusPlayerBlitzGamePlayerInformationSentToPlayers struct {
-	PlayerID          int
-	PlayerInformation []*VersusPlayerBlitzGamePlayerInformation
-	Time              time.Duration
+	PlayerID         int
+	EnemyInformation *VersusPlayerBlitzGamePlayerInformation
+	Time             time.Duration
 }
 
 type VersusPlayerBlitzGameState struct {
@@ -245,10 +245,19 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 			}
 
 			for player, info := range vpbg.playerGameInformation {
-				sendMessageToPlayer(&VersusPlayerBlitzGamePlayerInformationSentToPlayers{
-					PlayerID:          info.ID,
-					PlayerInformation: playerInformationArray,
-					Time:              vpbg.timeLimit,
+
+				var enemyInformation *VersusPlayerBlitzGamePlayerInformation
+
+				for enemy, info := range vpbg.playerGameInformation {
+					if player != enemy {
+						enemyInformation = info
+					}
+				}
+
+				go sendMessageToPlayer(&VersusPlayerBlitzGamePlayerInformationSentToPlayers{
+					PlayerID:         info.ID,
+					EnemyInformation: enemyInformation,
+					Time:             vpbg.timeLimit,
 				}, player, vpbg.versusLobby.messagesToPlayersChannel)
 			}
 

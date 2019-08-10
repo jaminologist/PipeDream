@@ -249,6 +249,10 @@ type VersusLobby struct {
 	isFull bool
 }
 
+type LobbyBegin struct {
+	IsStarted bool
+}
+
 func NewVersusLobby(vlm *VersusLobbyManager) *VersusLobby {
 
 	return &VersusLobby{
@@ -301,10 +305,9 @@ func (lobby *VersusLobby) Run() {
 
 	go func() {
 		log.Println("Beginning Versus Game...")
-		lobby.boardcastAll <- &Message{
-			messageType: websocket.TextMessage,
-			message:     []byte("found_lobby"),
-		}
+		sendMessageToAll(&LobbyBegin{
+			IsStarted: true,
+		}, lobby.boardcastAll)
 		go lobby.game.Run()
 	}()
 
@@ -338,13 +341,12 @@ OuterLoop:
 
 			for player := range lobby.players {
 				if err := player.conn.WriteMessage(messageToAll.messageType, messageToAll.message); err != nil {
-					log.Println(err)
-					//return
+					log.Println("Player Connection Error: ")
 				}
 			}
 		}
 	}
 
-	fmt.Println("Lobby Closed")
+	log.Println("Versus Lobby Closed")
 
 }
