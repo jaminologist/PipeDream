@@ -7,10 +7,7 @@ var client = WebSocketClient.new()
 
 func _ready():
     get_node("VictoryCenterContainer").hide()
-    #update_time_counter_text(90)
-    
     client.connect_to_url(Connections.SINGLE_PLAYER_WEBSOCKET_STRING)
-    print(client.get_connection_status())
     client.connect("connection_failed", self, "_on_connection_error")
     pass 
     
@@ -58,9 +55,20 @@ func poll_client_and_update():
             
             if enemyInformation.get("Score", null) != null:
                 set_enemy_score(enemyInformation.get("Score"))
-            
-            
-            
+                
+            if enemyInformation.get("Board", null) != null:
+                
+                var container = $VBoxContainer/HEnemyInformationContainer/VRivalGridContainer
+                var rivalGrid = $VBoxContainer/HEnemyInformationContainer/VRivalGridContainer/RivalGrid
+                
+                var isFirstLoad = rivalGrid.board == null
+                
+                rivalGrid.load_board_into_grid(enemyInformation.get("Board"))
+                
+                if isFirstLoad:
+                    rivalGrid.position.x = (container.rect_size.x / 2 - ((rivalGrid.column * rivalGrid.cell_size) / 2))
+                    rivalGrid.position.y = (container.rect_size.y / 2 - ((rivalGrid.column * rivalGrid.cell_size) / 2))
+                
             
         if json.get("Score", null) != null:
             set_score(json.get("Score", 0))
@@ -96,15 +104,6 @@ func set_score(score: int):
 func set_enemy_score(score: int):
     $VBoxContainer/HEnemyInformationContainer/VEnemyScoreBoxContainer/Score_Number_Label.set_score(score)
     self.score = str(score)
-
-func _on_BlitzTimer_timeout():
-    time_limit -= 1
-    if time_limit <= 0:
-        $BlitzTimer.stop()
-        open_score_screen()
-        time_limit = 0
-    #update_time_counter_text(90)
-
 
 func _on_RetryButton_pressed():
     get_tree().reload_current_scene()

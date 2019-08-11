@@ -99,12 +99,12 @@ margin_bottom = 221.0
 alignment = 1
 
 [node name="VEnemyScoreBoxContainer" type="VBoxContainer" parent="VBoxContainer/HEnemyInformationContainer"]
-margin_left = 164.0
-margin_right = 316.0
+margin_right = 238.0
 margin_bottom = 86.0
+size_flags_horizontal = 3
 
 [node name="Score_Label" type="Label" parent="VBoxContainer/HEnemyInformationContainer/VEnemyScoreBoxContainer"]
-margin_right = 152.0
+margin_right = 238.0
 margin_bottom = 41.0
 custom_fonts/font = ExtResource( 3 )
 text = "Rival Score"
@@ -112,7 +112,15 @@ align = 1
 valign = 1
 
 [node name="Score_Number_Label" parent="VBoxContainer/HEnemyInformationContainer/VEnemyScoreBoxContainer" instance=ExtResource( 4 )]
-margin_right = 152.0
+
+[node name="VRivalGridContainer" type="VBoxContainer" parent="VBoxContainer/HEnemyInformationContainer"]
+margin_left = 242.0
+margin_right = 480.0
+margin_bottom = 86.0
+size_flags_horizontal = 3
+
+[node name="RivalGrid" parent="VBoxContainer/HEnemyInformationContainer/VRivalGridContainer" instance=ExtResource( 2 )]
+cell_size = 10.0
 
 [node name="VictoryCenterContainer" type="CenterContainer" parent="."]
 editor/display_folded = true
