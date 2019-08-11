@@ -13,7 +13,7 @@ COPY cmd cmd
 COPY static static
 
 EXPOSE 80
-EXPOSE 17700
+EXPOSE 80
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build cmd/main.go 
 

@@ -8,6 +8,6 @@ import (
 
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	fmt.Println("Listening on 17700...")
-	log.Fatal(http.ListenAndServe(":17700", nil))
+	fmt.Println("Listening on 80...")
+	log.Fatal(http.ListenAndServe(":80", nil))
 }
