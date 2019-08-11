@@ -78,7 +78,7 @@ type SinglePlayerBlitzGameState struct {
 
 func NewSinglePlayerBlitzGame(playerOutputChannel chan *Message, timeLimit time.Duration) *SinglePlayerBlitzGame {
 
-	board := NewBoard(7, 8)
+	board := NewBoard(7, 7)
 
 	return &SinglePlayerBlitzGame{
 		timeLimit:            timeLimit,
@@ -185,18 +185,17 @@ type VersusPlayerBlitzGamePlayerInformation struct {
 
 type VersusPlayerBlitzGamePlayerInformationSentToPlayers struct {
 	PlayerID         int
-	EnemyInformation *VersusPlayerBlitzGamePlayerInformation
+	EnemyInformation *VersusPlayerBlitzGameState
 	Time             time.Duration
 }
 
 type VersusPlayerBlitzGameState struct {
 	ID int
 
-	Board          *Board
-	BoardReports   []BoardReport
-	Score          int
-	IsOver         bool
-	DestroyedPipes []DestroyedPipe
+	Board        *Board
+	BoardReports []BoardReport
+	Score        int
+	IsOver       bool
 }
 
 func NewVersusPlayerBlitzGame(vl *VersusLobby, timeLimit time.Duration) *VersusPlayerBlitzGame {
@@ -205,7 +204,7 @@ func NewVersusPlayerBlitzGame(vl *VersusLobby, timeLimit time.Duration) *VersusP
 
 	i := 0
 	for player := range vl.players {
-		newBoard := NewBoard(7, 8)
+		newBoard := NewBoard(7, 7)
 		newBoard.UpdateBoardPipeConnections() //Note: Need to add a way to generate a board where there are no connections straight away.
 		playerGameInformation[player] = &VersusPlayerBlitzGamePlayerInformation{
 			i,
@@ -233,31 +232,33 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 				Board: info.Board,
 				Score: info.Score,
 			}, player, vpbg.versusLobby.messagesToPlayersChannel)
+
+			opponent := vpbg.getOpponent(player)
+
+			sendMessageToPlayer(&VersusPlayerBlitzGamePlayerInformationSentToPlayers{
+				EnemyInformation: &VersusPlayerBlitzGameState{
+					Board: info.Board,
+					Score: info.Score,
+				},
+			}, opponent, vpbg.versusLobby.messagesToPlayersChannel)
+
 		}
 
 		for !vpbg.isOver {
 			vpbg.timeLimit = vpbg.timeLimit - serverTick
 
-			playerInformationArray := make([]*VersusPlayerBlitzGamePlayerInformation, 0)
+			//playerInformationArray := make([]*VersusPlayerBlitzGamePlayerInformation, 0)
 
-			for _, info := range vpbg.playerGameInformation {
+			/*for _, info := range vpbg.playerGameInformation {
 				playerInformationArray = append(playerInformationArray, info)
-			}
+			}*/
 
 			for player, info := range vpbg.playerGameInformation {
-
-				var enemyInformation *VersusPlayerBlitzGamePlayerInformation
-
-				for enemy, info := range vpbg.playerGameInformation {
-					if player != enemy {
-						enemyInformation = info
-					}
-				}
-
+				//enemyInformation := vpbg.playerGameInformation[vpbg.getOpponent(player)]
 				go sendMessageToPlayer(&VersusPlayerBlitzGamePlayerInformationSentToPlayers{
-					PlayerID:         info.ID,
-					EnemyInformation: enemyInformation,
-					Time:             vpbg.timeLimit,
+					PlayerID: info.ID,
+					//EnemyInformation: enemyInformation,
+					Time: vpbg.timeLimit,
 				}, player, vpbg.versusLobby.messagesToPlayersChannel)
 			}
 
@@ -300,9 +301,28 @@ OuterLoop:
 			}
 
 			sendMessageToPlayer(gameState, player, vpbg.versusLobby.messagesToPlayersChannel)
+
+			opponent := vpbg.getOpponent(player)
+			gameStateSentToOpponent := &VersusPlayerBlitzGamePlayerInformationSentToPlayers{
+				EnemyInformation: &VersusPlayerBlitzGameState{
+					BoardReports: boardReports,
+					Score:        info.Score,
+				},
+			}
+
+			sendMessageToPlayer(gameStateSentToOpponent, opponent, vpbg.versusLobby.messagesToPlayersChannel)
 		}
 	}
 
+}
+
+func (vpbg *VersusPlayerBlitzGame) getOpponent(p *Player) *Player {
+	for opponent := range vpbg.playerGameInformation {
+		if p != opponent {
+			return opponent
+		}
+	}
+	return nil
 }
 
 func sendMessageToPlayer(v interface{}, player *Player, messageToPlayerChannel chan *MessageFromPlayer) {

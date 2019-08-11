@@ -1,7 +1,7 @@
 package multiplayer
 
 import (
-	"fmt"
+	"log"
 )
 
 type Player struct {
@@ -37,8 +37,7 @@ func (p *Player) run() {
 	for {
 		messageType, message, err := p.conn.ReadMessage()
 		if err != nil {
-			fmt.Println("err?")
-
+			log.Println("Error Reading Message From Player, Unregistering Player")
 			p.Unregister(p)
 			return
 		}
@@ -48,14 +47,6 @@ func (p *Player) run() {
 			message:     message,
 			player:      p,
 		})
-
-		/*select {
-		case p.lobby.boardcast <- &MessageFromPlayer{
-			messageType: messageType,
-			message:     message,
-			player:      p,
-		}:
-		}*/
 	}
 
 }
