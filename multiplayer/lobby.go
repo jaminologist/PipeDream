@@ -54,7 +54,7 @@ func (lobby *Lobby) AddPlayer(p *Player) bool {
 
 }
 
-func (lobby *Lobby) Unregister(player *Player) {
+func (lobby *Lobby) UnregisterPlayer(player *Player) {
 	lobby.unregister <- player
 }
 
@@ -181,7 +181,7 @@ func (lobby *SinglePlayerLobby) AddPlayer(p *Player) bool {
 	return false
 }
 
-func (lobby *SinglePlayerLobby) Unregister(player *Player) {
+func (lobby *SinglePlayerLobby) UnregisterPlayer(player *Player) {
 	lobby.unregister <- player
 }
 
@@ -270,22 +270,25 @@ func NewVersusLobby(vlm *VersusLobbyManager) *VersusLobby {
 func (lobby *VersusLobby) AddPlayer(p *Player) bool {
 
 	if len(lobby.players) < 2 {
-
-		p.PlayerRegister = lobby
-		p.PlayerMessageReceiver = lobby
-
 		lobby.players[p] = true
 		if len(lobby.players) >= 2 {
 			lobby.isFull = true
 		}
-
-		//go p.run()
 		return true
 	}
 	return false
 }
 
-func (lobby *VersusLobby) Unregister(player *Player) {
+func (lobby *VersusLobby) RemovePlayer(p *Player) bool {
+
+	if _, ok := lobby.players[p]; ok {
+		delete(lobby.players, p)
+		return true
+	}
+	return false
+}
+
+func (lobby *VersusLobby) UnregisterPlayer(player *Player) {
 	lobby.unregister <- player
 }
 
@@ -298,7 +301,8 @@ func (lobby *VersusLobby) SendMessage(message *MessageFromPlayer) {
 func (lobby *VersusLobby) Run() {
 
 	for player := range lobby.players {
-		go player.run()
+		player.PlayerRegister = lobby
+		player.PlayerMessageReceiver = lobby
 	}
 
 	lobby.game = NewVersusPlayerBlitzGame(lobby, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
@@ -317,10 +321,9 @@ OuterLoop:
 
 		case unRegisteringPlayer := <-lobby.unregister:
 
-			if _, ok := lobby.players[unRegisteringPlayer]; ok {
-				delete(lobby.players, unRegisteringPlayer)
-			}
+			log.Println("Unregistering Player...")
 
+			lobby.RemovePlayer(unRegisteringPlayer)
 			if len(lobby.players) <= 0 {
 				break OuterLoop
 			}

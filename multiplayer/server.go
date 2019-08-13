@@ -162,10 +162,13 @@ var upgrader = websocket.Upgrader{
 }
 
 type VersusLobbyManager struct {
+	players map[*Player](*VersusLobby)
+
 	openVersusLobbies   []*VersusLobby
 	closedVersusLobbies map[*VersusLobby](bool)
 
-	playerHandler chan *Player
+	playerHandler    chan *Player
+	unregisterPlayer chan *Player
 
 	registerLobby   chan *VersusLobby
 	unregisterLobby chan *VersusLobby
@@ -176,6 +179,7 @@ func NewVersusLobbyManager() VersusLobbyManager {
 		openVersusLobbies:   make([]*VersusLobby, 0),
 		closedVersusLobbies: make(map[*VersusLobby](bool)),
 		playerHandler:       make(chan *Player),
+		unregisterPlayer:    make(chan *Player),
 		registerLobby:       make(chan *VersusLobby),
 		unregisterLobby:     make(chan *VersusLobby),
 	}
@@ -187,6 +191,10 @@ func (vlm *VersusLobbyManager) Unregister(vl *VersusLobby) {
 
 func (vlm *VersusLobbyManager) Register(vl *VersusLobby) {
 	vlm.registerLobby <- vl
+}
+
+func (vlm *VersusLobbyManager) UnregisterPlayer(player *Player) {
+	vlm.unregisterPlayer <- player
 }
 
 func (vlm *VersusLobbyManager) registerPlayer(p *Player) {
@@ -203,8 +211,15 @@ func (vlm *VersusLobbyManager) Run() {
 		select {
 		case newPlayer := <-vlm.playerHandler:
 			log.Println("Handling New Player")
+			newPlayer.PlayerRegister = vlm
+			go newPlayer.run()
 			vlm.handleNewPlayer(newPlayer)
 
+		case unregisteringPlayer := <-vlm.unregisterPlayer:
+			log.Println("Removing Player From Open Lobby...")
+			for _, lobby := range vlm.openVersusLobbies {
+				lobby.RemovePlayer(unregisteringPlayer)
+			}
 		case registeringLobby := <-vlm.registerLobby:
 			_ = registeringLobby
 		case unregisteringLobby := <-vlm.unregisterLobby:

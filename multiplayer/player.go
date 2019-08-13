@@ -18,7 +18,7 @@ type Conn interface {
 }
 
 type PlayerRegister interface {
-	Unregister(player *Player)
+	UnregisterPlayer(player *Player)
 }
 
 type PlayerMessageReceiver interface {
@@ -38,15 +38,17 @@ func (p *Player) run() {
 		messageType, message, err := p.conn.ReadMessage()
 		if err != nil {
 			log.Println("Error Reading Message From Player, Unregistering Player")
-			p.Unregister(p)
+			p.UnregisterPlayer(p)
 			return
 		}
 
-		p.SendMessage(&MessageFromPlayer{
-			messageType: messageType,
-			message:     message,
-			player:      p,
-		})
+		if p.PlayerMessageReceiver != nil {
+			p.SendMessage(&MessageFromPlayer{
+				messageType: messageType,
+				message:     message,
+				player:      p,
+			})
+		}
 	}
 
 }
