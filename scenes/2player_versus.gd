@@ -26,7 +26,15 @@ func set_client(client: WebSocketClient):
     self.client = client
     client.connect("connection_failed", self, "_on_connection_error")
     
-        
+func disable():
+    set_process(false)
+    $Grid.set_process(false)
+    $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid.set_process(false)
+    
+func enable():
+    set_process(true)
+    $Grid.set_process(true)
+    $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid.set_process(true)
         
 func poll_client_and_update():
     client.poll()

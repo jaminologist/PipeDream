@@ -6,6 +6,7 @@ var client = WebSocketClient.new()
 func _ready():
     
     $TwoPlayerVersus.hide()
+    $TwoPlayerVersus.disable()
     $TwoPlayerVersus.set_process(false)
     $TwoPlayerVersus/Grid.set_process(false)
     
@@ -35,9 +36,8 @@ func _process(delta):
                 $TwoPlayerVersus.set_client(client)
                 $WaitingForPlayersScreen.hide()
                 $TwoPlayerVersus.show()
-                $TwoPlayerVersus.set_process(true)
-                $TwoPlayerVersus/Grid.set_process(true)
-                $WaitingForPlayersScreen.set_process(true)
+                $TwoPlayerVersus.enable()
+                $WaitingForPlayersScreen.set_process(false)
     
 func _on_connection_established():
     print("Connection establised")
@@ -47,3 +47,9 @@ func _on_connection_error():
     
 func _on_connection_disconnected():
     get_tree().change_scene("res://scenes/main_menu.tscn")
+
+
+func _on_CancelButton_pressed():
+    client.disconnect_from_host()
+    get_tree().change_scene("res://scenes/main_menu.tscn")
+    pass # Replace with function body.
