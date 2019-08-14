@@ -8,7 +8,7 @@ type Player struct {
 	score int
 	conn  Conn
 
-	PlayerRegister
+	playerRegister
 	PlayerMessageReceiver
 }
 
@@ -17,12 +17,12 @@ type Conn interface {
 	WriteMessage(messageType int, data []byte) error
 }
 
-type PlayerRegister interface {
-	UnregisterPlayer(player *Player)
+type playerRegister interface {
+	unregisterPlayer(player *Player)
 }
 
 type PlayerMessageReceiver interface {
-	SendMessage(message *MessageFromPlayer)
+	SendMessage(message *PlayerMessage)
 }
 
 func newPlayer(conn Conn) *Player {
@@ -38,12 +38,12 @@ func (p *Player) run() {
 		messageType, message, err := p.conn.ReadMessage()
 		if err != nil {
 			log.Println("Error Reading Message From Player, Unregistering Player")
-			p.UnregisterPlayer(p)
+			p.unregisterPlayer(p)
 			return
 		}
 
 		if p.PlayerMessageReceiver != nil {
-			p.SendMessage(&MessageFromPlayer{
+			p.SendMessage(&PlayerMessage{
 				messageType: messageType,
 				message:     message,
 				player:      p,

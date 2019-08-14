@@ -8,53 +8,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Game struct {
-	lobby     *Lobby
-	timeLimit time.Duration
-}
-
-type GameState struct {
-	Time   time.Duration
-	IsOver bool
-}
-
 type TimeLimit struct {
 	Time time.Duration
 }
 
 type GameOver struct {
 	Time time.Duration
-}
-
-func NewGame(l *Lobby, timeLimit time.Duration) *Game {
-
-	return &Game{
-		lobby:     l,
-		timeLimit: timeLimit,
-	}
-
-}
-
-func (g *Game) Run() {
-
-	for {
-		g.timeLimit = g.timeLimit - serverTick
-		isOver := g.timeLimit <= 0
-		messageBytes, err := json.Marshal(&GameState{Time: g.timeLimit, IsOver: isOver})
-
-		if err != nil {
-			log.Println(err)
-		} else {
-			g.lobby.boardcastAll <- &Message{messageType: websocket.TextMessage, message: messageBytes}
-		}
-
-		if isOver {
-			break
-		}
-
-		time.Sleep(serverTick)
-	}
-
 }
 
 type SinglePlayerBlitzGame struct {
@@ -246,19 +205,10 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 
 		for !vpbg.isOver {
 			vpbg.timeLimit = vpbg.timeLimit - serverTick
-
-			//playerInformationArray := make([]*VersusPlayerBlitzGamePlayerInformation, 0)
-
-			/*for _, info := range vpbg.playerGameInformation {
-				playerInformationArray = append(playerInformationArray, info)
-			}*/
-
 			for player, info := range vpbg.playerGameInformation {
-				//enemyInformation := vpbg.playerGameInformation[vpbg.getOpponent(player)]
 				go sendMessageToPlayer(&VersusPlayerBlitzGamePlayerInformationSentToPlayers{
 					PlayerID: info.ID,
-					//EnemyInformation: enemyInformation,
-					Time: vpbg.timeLimit,
+					Time:     vpbg.timeLimit,
 				}, player, vpbg.versusLobby.messagesToPlayersChannel)
 			}
 
@@ -325,13 +275,13 @@ func (vpbg *VersusPlayerBlitzGame) getOpponent(p *Player) *Player {
 	return nil
 }
 
-func sendMessageToPlayer(v interface{}, player *Player, messageToPlayerChannel chan *MessageFromPlayer) {
+func sendMessageToPlayer(v interface{}, player *Player, messageToPlayerChannel chan *PlayerMessage) {
 	messageBytes, err := json.Marshal(v)
 
 	if err != nil {
 		log.Println(err)
 	} else {
-		messageToPlayerChannel <- &MessageFromPlayer{player: player, messageType: websocket.TextMessage, message: messageBytes}
+		messageToPlayerChannel <- &PlayerMessage{player: player, messageType: websocket.TextMessage, message: messageBytes}
 	}
 }
 

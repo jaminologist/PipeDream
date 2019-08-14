@@ -9,139 +9,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-//Lobby manages the number of players and the interacts between players in a game
-type Lobby struct {
-	players map[*Player]bool
-
-	// Register
-	register chan *Player
-
-	// Unregister
-	unregister chan *Player
-
-	boardcast chan *MessageFromPlayer
-
-	boardcastAll chan *Message
-
-	game *Game
-}
-
-func NewLobby() *Lobby {
-
-	return &Lobby{
-		players:      make(map[*Player]bool),
-		register:     make(chan *Player),
-		unregister:   make(chan *Player),
-		boardcast:    make(chan *MessageFromPlayer),
-		boardcastAll: make(chan *Message),
-	}
-
-}
-
-func (lobby *Lobby) AddPlayer(p *Player) bool {
-
-	fmt.Println("Addplayer len is:", len(lobby.players))
-
-	if len(lobby.players) < 2 {
-		lobby.players[p] = true
-		p.PlayerRegister = lobby
-		p.PlayerMessageReceiver = lobby
-		go p.run()
-		return true
-	}
-
-	return false
-
-}
-
-func (lobby *Lobby) UnregisterPlayer(player *Player) {
-	lobby.unregister <- player
-}
-
-func (lobby *Lobby) SendMessage(message *MessageFromPlayer) {
-	select {
-	case lobby.boardcast <- message:
-	}
-}
-
-func (l *Lobby) Run() {
-
-	go func() {
-		l.boardcastAll <- &Message{
-			messageType: websocket.TextMessage,
-			message:     []byte("found_lobby"),
-		}
-
-		l.game = NewGame(l, 90*time.Second)
-		go l.game.Run()
-	}()
-
-OuterLoop:
-	for {
-		select {
-		//case player := <-l.register:
-		/*if len(l.players) < 2 {
-			fmt.Println("New player has joined the server ")
-			l.players[player] = true
-			player.lobby = l
-			go player.run()
-
-			if len(l.players) == 2 {
-				go func() {
-					l.boardcastAll <- &Message{
-						messageType: websocket.TextMessage,
-						message:     []byte("found_lobby"),
-					}
-					l.game = NewGame(l, 60*time.Second)
-					go l.game.Run()
-				}()
-			}
-
-		}*/
-		case player := <-l.unregister:
-			if _, ok := l.players[player]; ok {
-				delete(l.players, player)
-			}
-
-			if len(l.players) == 0 {
-				break OuterLoop
-			}
-
-		case messageFromPlayer := <-l.boardcast:
-			for player := range l.players {
-				if messageFromPlayer.player != player {
-					if err := player.conn.WriteMessage(messageFromPlayer.messageType, messageFromPlayer.message); err != nil {
-						log.Println(err)
-						return
-					}
-				}
-			}
-
-		case message := <-l.boardcastAll:
-			fmt.Println("Broadcast All")
-			for player := range l.players {
-				if err := player.conn.WriteMessage(message.messageType, message.message); err != nil {
-					log.Println(err)
-					return
-				}
-			}
-		}
-
-	}
-
-	fmt.Println("Lobby Closed")
-
-}
-
-func (l *Lobby) addNewPlayer() bool {
-
-	return true
-}
-
-func (l *Lobby) isFull() bool {
-	return true
-}
-
 const SINGLEPLAYERBLITZGAMETIMELIMIT = 90
 
 type SinglePlayerLobby struct {
@@ -152,9 +19,19 @@ type SinglePlayerLobby struct {
 	register   chan *Player
 	unregister chan *Player
 
-	playerMessageChannel chan *MessageFromPlayer
+	playerMessageChannel chan *PlayerMessage
 
 	boardcastAll chan *Message
+}
+
+type BoardInput struct {
+	X int
+	Y int
+}
+
+type PlayerBoardInput struct {
+	player *Player
+	BoardInput
 }
 
 func NewSinglePlayerLobby() *SinglePlayerLobby {
@@ -163,7 +40,7 @@ func NewSinglePlayerLobby() *SinglePlayerLobby {
 		player:               nil,
 		register:             make(chan *Player),
 		unregister:           make(chan *Player),
-		playerMessageChannel: make(chan *MessageFromPlayer),
+		playerMessageChannel: make(chan *PlayerMessage),
 		boardcastAll:         make(chan *Message),
 	}
 
@@ -173,7 +50,7 @@ func (lobby *SinglePlayerLobby) AddPlayer(p *Player) bool {
 
 	if lobby.player == nil {
 		lobby.player = p
-		p.PlayerRegister = lobby
+		p.playerRegister = lobby
 		p.PlayerMessageReceiver = lobby
 		go p.run()
 		return true
@@ -181,11 +58,11 @@ func (lobby *SinglePlayerLobby) AddPlayer(p *Player) bool {
 	return false
 }
 
-func (lobby *SinglePlayerLobby) UnregisterPlayer(player *Player) {
+func (lobby *SinglePlayerLobby) unregisterPlayer(player *Player) {
 	lobby.unregister <- player
 }
 
-func (lobby *SinglePlayerLobby) SendMessage(message *MessageFromPlayer) {
+func (lobby *SinglePlayerLobby) SendMessage(message *PlayerMessage) {
 	select {
 	case lobby.playerMessageChannel <- message:
 	}
@@ -239,8 +116,8 @@ type VersusLobby struct {
 	register   chan *Player
 	unregister chan *Player
 
-	messagesToPlayersChannel chan *MessageFromPlayer
-	playerMessageChannel     chan *MessageFromPlayer
+	messagesToPlayersChannel chan *PlayerMessage
+	playerMessageChannel     chan *PlayerMessage
 
 	boardcastAll chan *Message
 
@@ -259,8 +136,8 @@ func NewVersusLobby(vlm *VersusLobbyManager) *VersusLobby {
 		players:                  make(map[*Player](bool)),
 		register:                 make(chan *Player),
 		unregister:               make(chan *Player),
-		messagesToPlayersChannel: make(chan *MessageFromPlayer),
-		playerMessageChannel:     make(chan *MessageFromPlayer),
+		messagesToPlayersChannel: make(chan *PlayerMessage),
+		playerMessageChannel:     make(chan *PlayerMessage),
 		boardcastAll:             make(chan *Message),
 		manager:                  vlm,
 	}
@@ -288,11 +165,11 @@ func (lobby *VersusLobby) RemovePlayer(p *Player) bool {
 	return false
 }
 
-func (lobby *VersusLobby) UnregisterPlayer(player *Player) {
+func (lobby *VersusLobby) unregisterPlayer(player *Player) {
 	lobby.unregister <- player
 }
 
-func (lobby *VersusLobby) SendMessage(message *MessageFromPlayer) {
+func (lobby *VersusLobby) SendMessage(message *PlayerMessage) {
 	select {
 	case lobby.playerMessageChannel <- message:
 	}
@@ -301,7 +178,7 @@ func (lobby *VersusLobby) SendMessage(message *MessageFromPlayer) {
 func (lobby *VersusLobby) Run() {
 
 	for player := range lobby.players {
-		player.PlayerRegister = lobby
+		player.playerRegister = lobby
 		player.PlayerMessageReceiver = lobby
 	}
 

@@ -12,13 +12,7 @@ const serverTick time.Duration = time.Duration(600) * time.Millisecond
 
 //Server manages the number of active Lobbies
 type Server struct {
-	lobbyMap     map[*Lobby]bool
-	emptyLobbies []*Lobby
-
 	versusLobbyManager *VersusLobbyManager
-
-	// Register
-	register chan *Player
 
 	singlePlayerRegister chan *Player
 	twoPlayerRegister    chan *Player
@@ -30,15 +24,11 @@ type Server struct {
 }
 
 func NewServer() *Server {
-
 	versusLobbyManager := NewVersusLobbyManager()
 	go versusLobbyManager.Run()
 
 	return &Server{
-		lobbyMap:               make(map[*Lobby]bool),
-		emptyLobbies:           make([]*Lobby, 0),
 		versusLobbyManager:     &versusLobbyManager,
-		register:               make(chan *Player),
 		singlePlayerRegister:   make(chan *Player),
 		twoPlayerRegister:      make(chan *Player),
 		unregister:             make(chan *Player),
@@ -46,21 +36,6 @@ func NewServer() *Server {
 		playersInLobby:         make(map[*Player]bool),
 	}
 
-}
-
-//HandleNewConnection Creates a new WebSocket Connection with the Multiplayer server and Registers the player with the server
-func (s *Server) HandleNewConnection(w http.ResponseWriter, r *http.Request) {
-
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	newPlayer := newPlayer(conn)
-	s.register <- newPlayer
 }
 
 //CreateSinglePlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for a singleplayer session
@@ -81,7 +56,9 @@ func (s *Server) CreateSinglePlayerSession(w http.ResponseWriter, r *http.Reques
 
 //FindTwoPlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for finding a two player mutiplayer session
 func (s *Server) FindTwoPlayerSession(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		return true
+	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 
@@ -98,10 +75,7 @@ func (s *Server) FindTwoPlayerSession(w http.ResponseWriter, r *http.Request) {
 func (s *Server) Run() {
 
 	for {
-
 		select {
-		case newPlayer := <-s.register:
-			s.playersLookingForLobby = append(s.playersLookingForLobby, newPlayer)
 		case newSinglePlayer := <-s.singlePlayerRegister:
 			var singlePlayerLobby = NewSinglePlayerLobby()
 			singlePlayerLobby.AddPlayer(newSinglePlayer)
@@ -109,30 +83,7 @@ func (s *Server) Run() {
 		case newVersusPlayer := <-s.twoPlayerRegister:
 			s.versusLobbyManager.registerPlayer(newVersusPlayer)
 		}
-
-		/*if len(s.playersLookingForLobby) > 0 {
-
-			for i := 0; i < len(s.playersLookingForLobby); i++ {
-				if len(s.emptyLobbies) == 0 {
-					s.emptyLobbies = append(s.emptyLobbies, NewLobby())
-				}
-
-				success := s.emptyLobbies[0].AddPlayer(s.playersLookingForLobby[i])
-
-				if len(s.emptyLobbies[0].players) == 2 {
-					fmt.Println("success is: ", success)
-					var fullLobby *Lobby
-					fullLobby, s.emptyLobbies = s.emptyLobbies[0], s.emptyLobbies[1:]
-					s.lobbyMap[fullLobby] = true
-					go fullLobby.Run()
-				}
-			}
-
-			s.playersLookingForLobby = make([]*Player, 0)
-		}*/
-
 	}
-
 }
 
 type Message struct {
@@ -140,17 +91,7 @@ type Message struct {
 	message     []byte
 }
 
-type BoardInput struct {
-	X int
-	Y int
-}
-
-type PlayerBoardInput struct {
-	player *Player
-	BoardInput
-}
-
-type MessageFromPlayer struct {
+type PlayerMessage struct {
 	messageType int
 	message     []byte
 	player      *Player
@@ -167,39 +108,39 @@ type VersusLobbyManager struct {
 	openVersusLobbies   []*VersusLobby
 	closedVersusLobbies map[*VersusLobby](bool)
 
-	playerHandler    chan *Player
-	unregisterPlayer chan *Player
+	registerPlayerCh   chan *Player
+	unregisterPlayerCh chan *Player
 
-	registerLobby   chan *VersusLobby
-	unregisterLobby chan *VersusLobby
+	registerLobbyCh   chan *VersusLobby
+	unregisterLobbyCh chan *VersusLobby
 }
 
 func NewVersusLobbyManager() VersusLobbyManager {
 	return VersusLobbyManager{
 		openVersusLobbies:   make([]*VersusLobby, 0),
 		closedVersusLobbies: make(map[*VersusLobby](bool)),
-		playerHandler:       make(chan *Player),
-		unregisterPlayer:    make(chan *Player),
-		registerLobby:       make(chan *VersusLobby),
-		unregisterLobby:     make(chan *VersusLobby),
+		registerPlayerCh:    make(chan *Player),
+		unregisterPlayerCh:  make(chan *Player),
+		registerLobbyCh:     make(chan *VersusLobby),
+		unregisterLobbyCh:   make(chan *VersusLobby),
 	}
 }
 
-func (vlm *VersusLobbyManager) Unregister(vl *VersusLobby) {
-	vlm.unregisterLobby <- vl
+func (vlm *VersusLobbyManager) unregisterLobby(vl *VersusLobby) {
+	vlm.unregisterLobbyCh <- vl
 }
 
-func (vlm *VersusLobbyManager) Register(vl *VersusLobby) {
-	vlm.registerLobby <- vl
+func (vlm *VersusLobbyManager) registerLobby(vl *VersusLobby) {
+	vlm.registerLobbyCh <- vl
 }
 
-func (vlm *VersusLobbyManager) UnregisterPlayer(player *Player) {
-	vlm.unregisterPlayer <- player
+func (vlm *VersusLobbyManager) unregisterPlayer(player *Player) {
+	vlm.unregisterPlayerCh <- player
 }
 
 func (vlm *VersusLobbyManager) registerPlayer(p *Player) {
 	log.Println("Registering New Player To VersusLobby Manager...")
-	vlm.playerHandler <- p
+	vlm.registerPlayerCh <- p
 }
 
 func (vlm *VersusLobbyManager) Run() {
@@ -207,23 +148,20 @@ func (vlm *VersusLobbyManager) Run() {
 	log.Println("Starting Versus Lobby Manager...")
 
 	for {
-		//log.Println("Spam city")
 		select {
-		case newPlayer := <-vlm.playerHandler:
+		case newPlayer := <-vlm.registerPlayerCh:
 			log.Println("Handling New Player")
-			newPlayer.PlayerRegister = vlm
+			newPlayer.playerRegister = vlm
 			go newPlayer.run()
 			vlm.handleNewPlayer(newPlayer)
-
-		case unregisteringPlayer := <-vlm.unregisterPlayer:
+		case unregisteringPlayer := <-vlm.unregisterPlayerCh:
 			log.Println("Removing Player From Open Lobby...")
-			for _, lobby := range vlm.openVersusLobbies {
+			for _, lobby := range vlm.openVersusLobbies { //S
 				lobby.RemovePlayer(unregisteringPlayer)
 			}
-		case registeringLobby := <-vlm.registerLobby:
+		case registeringLobby := <-vlm.registerLobbyCh:
 			_ = registeringLobby
-		case unregisteringLobby := <-vlm.unregisterLobby:
-
+		case unregisteringLobby := <-vlm.unregisterLobbyCh:
 			_, ok := vlm.closedVersusLobbies[unregisteringLobby]
 			if ok {
 				delete(vlm.closedVersusLobbies, unregisteringLobby)
