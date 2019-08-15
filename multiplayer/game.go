@@ -145,7 +145,6 @@ type VersusPlayerBlitzGamePlayerInformation struct {
 type VersusPlayerBlitzGamePlayerInformationSentToPlayers struct {
 	PlayerID         int
 	EnemyInformation *VersusPlayerBlitzGameState
-	Time             time.Duration
 }
 
 type VersusPlayerBlitzGameState struct {
@@ -205,10 +204,9 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 
 		for !vpbg.isOver {
 			vpbg.timeLimit = vpbg.timeLimit - serverTick
-			for player, info := range vpbg.playerGameInformation {
-				go sendMessageToPlayer(&VersusPlayerBlitzGamePlayerInformationSentToPlayers{
-					PlayerID: info.ID,
-					Time:     vpbg.timeLimit,
+			for player := range vpbg.playerGameInformation {
+				go sendMessageToPlayer(&TimeLimit{
+					Time: vpbg.timeLimit,
 				}, player, vpbg.versusLobby.messagesToPlayersChannel)
 			}
 
