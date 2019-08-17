@@ -7,6 +7,8 @@ var client = WebSocketClient.new()
 
 var centerMath:CenterMath = load("res://math/center_math.gd").new()
 
+onready var time_display:Label = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/Time_Counter
+
 func _ready():
     get_node("VictoryCenterContainer").hide()
     #update_time_counter_text(90)
@@ -56,19 +58,14 @@ func poll_client_and_update():
             if firstload:
                 var pos:Vector2 = centerMath.center_rectangle_position_offset(rect_size.x, rect_size.y, $Grid.size.x, $Grid.size.y)
                 $Grid.position.x = pos.x
-                $Grid.position.y = pos.y + $Grid.cell_size * 2
+                $Grid.position.y = pos.y + ($Grid.cell_size * 2)
                 
         if json.get("DestroyedPipes", null) != null:
             $Grid.load_destroyed_pipes(json.get("DestroyedPipes", []))
         
 
 func update_time_counter_text(time_limit):
-    var time_limit_in_seconds = float(time_limit) / 1000000000
-    var minutes = time_limit_in_seconds / 60
-    var seconds = fmod(time_limit_in_seconds, 60)
-    var str_elapsed = "%2d:%02d" % [minutes, seconds]
-    
-    get_node("VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/Time_Counter").text = str_elapsed
+    time_display.convert_time_to_label_text_and_set_text(time_limit)
     
 func open_score_screen():
     $Grid.set_process(false)

@@ -3,10 +3,13 @@ extends Control
 var score = 0
 
 var client = WebSocketClient.new()
+var centerMath:CenterMath = load("res://math/center_math.gd").new()
+
+onready var time_display:Label = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/HBoxContainer/VBoxContainer2/Time_Counter
 
 func _ready():
     get_node("VictoryCenterContainer").hide()
-    client.connect_to_url(Connections.SINGLE_PLAYER_WEBSOCKET_STRING)
+    client.connect_to_url(Connections.VERSUS_PLAYER_WEBSOCKET_STRING)
     client.connect("connection_failed", self, "_on_connection_error")
     
     #Make opponenet explosive Giblets a bit smaller
@@ -66,8 +69,9 @@ func poll_client_and_update():
             $Grid.load_board_into_grid(json.get("Board"))
             
             if firstload:
-                $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
-                $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
+                var pos:Vector2 = centerMath.center_rectangle_position_offset(rect_size.x, rect_size.y, $Grid.size.x, $Grid.size.y)
+                $Grid.position.x = pos.x
+                $Grid.position.y = pos.y + $Grid.cell_size
                 
         if json.get("DestroyedPipes", null) != null:
             $Grid.load_destroyed_pipes(json.get("DestroyedPipes", []))
@@ -97,12 +101,7 @@ func poll_client_and_update():
         
 
 func update_time_counter_text(time_limit):
-    var time_limit_in_seconds = float(time_limit) / 1000000000
-    var minutes = time_limit_in_seconds / 60
-    var seconds = fmod(time_limit_in_seconds, 60)
-    var str_elapsed = "%d:%02d" % [minutes, seconds]
-    
-    $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/HBoxContainer/VBoxContainer2/Time_Counter.text = str_elapsed
+    time_display.convert_time_to_label_text_and_set_text(time_limit)
     
 func open_score_screen():
     $Grid.set_process(false)
