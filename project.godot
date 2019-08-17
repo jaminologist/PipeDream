@@ -16,12 +16,13 @@ _global_script_class_icons={
 [application]
 
 config/name="PipeDream"
-run/main_scene="res://Scenes/MainMenu.tscn"
+run/main_scene="res://scenes/main_menu.tscn"
 config/icon="res://icon.png"
 
 [autoload]
 
-PipeType="*res://global/PipeType.gd"
+PipeType="*res://global/pipetype.gd"
+Connections="*res://global/connection_strings.gd"
 
 [display]
 

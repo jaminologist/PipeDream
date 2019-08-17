@@ -73,7 +73,7 @@ func _process(delta):
     
     if Input.is_action_just_pressed("ui_cancel"):
         client.disconnect_from_host()
-        get_tree().change_scene("res://Scenes/MainMenu.tscn")
+        get_tree().change_scene("res://scenes/main_menu.tscn")
     
     if !is_ai:
         poll_client_and_update()
@@ -184,7 +184,7 @@ func _on_RetryButton_pressed():
     get_tree().reload_current_scene()
 
 func _on_MainMenuButton_pressed():
-    get_tree().change_scene("res://Scenes/MainMenu.tscn")
+    get_tree().change_scene("res://scenes/main_menu.tscn")
 
 
 func _on_Grid_explosive_pipe_destroyed(power, time):
@@ -204,5 +204,5 @@ func _on_enemy_board_clicked(enemy_board):
 
 
 func _on_connection_error():
-    get_tree().change_scene("res://Scenes/MainMenu.tscn")
+    get_tree().change_scene("res://scenes/main_menu.tscn")
     pass

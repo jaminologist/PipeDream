@@ -12,7 +12,7 @@ export (float) var height
 
 export (float) var expiryTime
 
-var giblet =  preload("res://entities/explosion/Giblet.tscn")
+var giblet =  preload("res://entities/explosion/giblet.tscn")
 
 func _ready():
     

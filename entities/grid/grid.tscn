@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://entities/grid/grid.gd" type="Script" id=1]
+[ext_resource path="res://entities/explosion/gibletfactory.tscn" type="PackedScene" id=2]
+
+[node name="Grid" type="Node2D"]
+script = ExtResource( 1 )
+cell_size = 48.0
+pipe_fall_speed = 600
+minimum_connection_color = Color( 0.85098, 0.501961, 0.47451, 1 )
+medium_connection_color = Color( 0.188235, 0.866667, 1, 1 )
+maximum_connection_color = Color( 1, 0.886275, 0.372549, 1 )
+
+[node name="GibletFactory" parent="." instance=ExtResource( 2 )]
+numberOfGiblets = 10.0
+maxspeed = 650.0
+maxFadeTime = 2.5
+width = 4.5
+height = 4.5
+expiryTime = 3.0

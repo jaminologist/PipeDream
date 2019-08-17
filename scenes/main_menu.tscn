@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://Scenes/MainMenu.gd" type="Script" id=1]
-[ext_resource path="res://assets/fonts/Roboto-Black.tres" type="DynamicFont" id=2]
+[ext_resource path="res://scenes/main_menu.gd" type="Script" id=1]
+[ext_resource path="res://assets/fonts/Roboto-Black.ttf" type="DynamicFontData" id=2]
+
+[sub_resource type="DynamicFont" id=1]
+size = 30
+font_data = ExtResource( 2 )
 
 [node name="MainMenu" type="Control"]
 anchor_right = 1.0
@@ -27,61 +31,51 @@ margin_bottom = -60.0
 [node name="Title" type="Label" parent="MenuGroup"]
 margin_right = 440.0
 margin_bottom = 41.0
-custom_fonts/font = ExtResource( 2 )
+custom_fonts/font = SubResource( 1 )
 text = "P I P E D R E A M "
 align = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="MenuGroup"]
 margin_top = 45.0
 margin_right = 440.0
-margin_bottom = 443.0
+margin_bottom = 386.0
 custom_constants/margin_top = 90
 custom_constants/margin_bottom = 90
 
 [node name="ButtonGroup" type="VBoxContainer" parent="MenuGroup/MarginContainer"]
 margin_top = 90.0
 margin_right = 440.0
-margin_bottom = 308.0
+margin_bottom = 251.0
 custom_constants/separation = 10
-
-[node name="ClassicButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
-margin_left = 166.0
-margin_right = 274.0
-margin_bottom = 47.0
-size_flags_horizontal = 4
-custom_fonts/font = ExtResource( 2 )
-text = "Classic"
-flat = true
 
 [node name="BlitzButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
 margin_left = 183.0
-margin_top = 57.0
 margin_right = 256.0
-margin_bottom = 104.0
+margin_bottom = 47.0
 size_flags_horizontal = 4
-custom_fonts/font = ExtResource( 2 )
+custom_fonts/font = SubResource( 1 )
 text = "Blitz"
 flat = true
 
 [node name="VersusButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
-margin_left = 167.0
-margin_top = 114.0
-margin_right = 272.0
-margin_bottom = 161.0
+margin_left = 133.0
+margin_top = 57.0
+margin_right = 306.0
+margin_bottom = 104.0
 size_flags_horizontal = 4
-custom_fonts/font = ExtResource( 2 )
-text = "Versus"
+custom_fonts/font = SubResource( 1 )
+text = "Versus Blitz"
 flat = true
 
-[node name="OptionsButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
-margin_left = 161.0
-margin_top = 171.0
-margin_right = 279.0
-margin_bottom = 218.0
+[node name="AIBlitzButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
+margin_left = 166.0
+margin_top = 114.0
+margin_right = 274.0
+margin_bottom = 161.0
 size_flags_horizontal = 4
-custom_fonts/font = ExtResource( 2 )
-text = "Options"
+custom_fonts/font = SubResource( 1 )
+text = "AI Blitz"
 flat = true
-[connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/ClassicButton" to="." method="_on_ClassicButton_pressed"]
 [connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/BlitzButton" to="." method="_on_BlitzButton_pressed"]
 [connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/VersusButton" to="." method="_on_VersusButton_pressed"]
+[connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/AIBlitzButton" to="." method="_on_VersusButton_pressed"]
