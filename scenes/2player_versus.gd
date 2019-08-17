@@ -134,6 +134,4 @@ func _on_connection_error():
 
 func _on_Grid_pipe_touch(x:int, y:int):
     var inputDictionary = {"x": x, "y": y}
-    var start = OS.get_ticks_usec()
     client.get_peer(1).put_packet(JSON.print(inputDictionary).to_ascii())
-    var elapsed = OS.get_ticks_usec() - start
