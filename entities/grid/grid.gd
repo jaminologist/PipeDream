@@ -105,7 +105,7 @@ func load_destroyed_pipes(destroyedPipes:Array):
         if type == PipeType.END_EXPLOSION_3:
             $GibletFactory.numberOfGiblets = 24
             $GibletFactory.create_explosion(x, y)
-            emit_signal("explosive_pipe_destroyed", 6, 2)
+            emit_signal("explosive_pipe_destroyed", 18, 3)
         elif  type == PipeType.END_EXPLOSION_2:
             $GibletFactory.numberOfGiblets = 12
             $GibletFactory.create_explosion(x, y)
@@ -181,11 +181,8 @@ func on_mouse_click():
         
         if board != null:
             if contains(gridX, gridY, board):   
-                #var start = OS.get_ticks_usec()
                 self.board[gridX][gridY].rotate_pipe()
                 emit_signal("pipe_touch", gridX, gridY)
-                #var elapsed = OS.get_ticks_usec() - start
-                #print("rotate pipe and emit signal:", elapsed)
 
 func get_new_pipe_instance(pipeType: int):
     var pipe = pipe_preload.instance()
