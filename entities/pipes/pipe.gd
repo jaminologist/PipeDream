@@ -1,4 +1,5 @@
 extends Node2D
+class_name Pipe
 
 var pipe_end_texture = preload("res://entities/pipes/assets/pipe_end_0.png")
 var pipe_end_explosion_2_texture = preload("res://entities/pipes/assets/pipe_explosion_0.png")

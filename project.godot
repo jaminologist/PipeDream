@@ -8,9 +8,26 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "Node",
+"class": "CenterMath",
+"language": "GDScript",
+"path": "res://math/center_math.gd"
+}, {
+"base": "Node2D",
+"class": "Grid",
+"language": "GDScript",
+"path": "res://entities/grid/grid.gd"
+}, {
+"base": "Node2D",
+"class": "Pipe",
+"language": "GDScript",
+"path": "res://entities/pipes/pipe.gd"
+} ]
 _global_script_class_icons={
-
+"CenterMath": "",
+"Grid": "",
+"Pipe": ""
 }
 
 [application]

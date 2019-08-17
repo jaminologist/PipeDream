@@ -5,6 +5,8 @@ var time_limit = 0
 
 var client = WebSocketClient.new()
 
+var centerMath:CenterMath = load("res://math/center_math.gd").new()
+
 func _ready():
     get_node("VictoryCenterContainer").hide()
     #update_time_counter_text(90)
@@ -52,8 +54,9 @@ func poll_client_and_update():
             $Grid.load_board_into_grid(json.get("Board"))
             
             if firstload:
-                $Grid.position.x = (rect_size.x / 2 - (($Grid.column * $Grid.cell_size) / 2))
-                $Grid.position.y = (rect_size.y / 2 - (($Grid.row * $Grid.cell_size) / 2)) + $Grid.cell_size * 2
+                var pos:Vector2 = centerMath.center_rectangle_position_offset(rect_size.x, rect_size.y, $Grid.size.x, $Grid.size.y)
+                $Grid.position.x = pos.x
+                $Grid.position.y = pos.y + $Grid.cell_size * 2
                 
         if json.get("DestroyedPipes", null) != null:
             $Grid.load_destroyed_pipes(json.get("DestroyedPipes", []))
