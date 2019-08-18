@@ -1,4 +1,5 @@
 extends Label
+class_name TimeLabel
 
 func _ready():
     pass

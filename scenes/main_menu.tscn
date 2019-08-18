@@ -78,4 +78,4 @@ text = "AI Blitz"
 flat = true
 [connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/BlitzButton" to="." method="_on_BlitzButton_pressed"]
 [connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/VersusButton" to="." method="_on_VersusButton_pressed"]
-[connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/AIBlitzButton" to="." method="_on_VersusButton_pressed"]
+[connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/AIBlitzButton" to="." method="_on_AIBlitzButton_pressed"]

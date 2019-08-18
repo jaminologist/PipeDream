@@ -16,6 +16,7 @@ border_width_bottom = 5
 border_color = Color( 0.396078, 0.831373, 1, 1 )
 
 [node name="2PlayerVersus" type="Control"]
+editor/display_folded = true
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
