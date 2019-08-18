@@ -1,4 +1,5 @@
 extends Node2D
+class_name Grid
 
 #Grid variables
 export (int) var x_position
@@ -6,24 +7,21 @@ export (int) var y_position
 export (float) var cell_size
 export (int) var pipe_fall_speed
 
-export (Color) var minimum_connection_color
-export (Color) var medium_connection_color
-export (Color) var maximum_connection_color
-
-
 signal pipe_touch
 signal pipes_destroyed(number)
 signal explosive_pipe_destroyed(power, time)
 
 var pipe_preload = preload("res://entities/pipes/pipe.tscn")
-
-var column
-var row
-var pipe_moving_count = 0
 var board
 var boardReports:Array = []
 var boardAnimationInProgress = false
 
+var column
+var row
+var pipe_moving_count:int = 0
+var isTouchable:bool = true
+
+var size:Vector2
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -51,8 +49,12 @@ func _process(delta):
             boardReport["PipeMovementAnimations"] =  null
     else:
         boardReports = []
-        
-    on_mouse_click() 
+    
+    if Input.is_action_just_pressed("ui_touch") && self.isTouchable:
+        on_mouse_click() 
+    
+func set_touchable(isTouchable:bool):
+    self.isTouchable = isTouchable
 
 #Load the board report information
 func load_boardreports_into_grid(boardReports: Array):
@@ -69,6 +71,8 @@ func load_board_into_grid(board:Dictionary):
         self.column = board.get("NumberOfColumns", 0)
         self.row = board.get("NumberOfRows", 0)
         self.board = make_2d_array(self.column, self.row)
+    
+        self.size = Vector2(self.column * cell_size, self.row * cell_size)
         
         for x in column:
             for y in row:
@@ -172,7 +176,6 @@ func pixel_to_grid(x, y):
   
 #Whenever the grid is touched it sends a signal of the x and y position of the grid where the touch occured   
 func on_mouse_click():
-    if Input.is_action_just_pressed("ui_touch"):
         var mouse_local_position = get_local_mouse_position()
         var mouse_grid_position = pixel_to_grid(mouse_local_position.x, mouse_local_position.y)
         

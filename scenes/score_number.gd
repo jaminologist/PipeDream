@@ -1,4 +1,5 @@
 extends Label
+class_name ScoreLabel
 
 var score_displayed_to_player: int
 var score: int

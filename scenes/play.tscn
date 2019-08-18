@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://scenes/play.gd" type="Script" id=1]
 [ext_resource path="res://entities/grid/grid.tscn" type="PackedScene" id=2]
 [ext_resource path="res://assets/fonts/roboto_black.tres" type="DynamicFont" id=3]
-[ext_resource path="res://scenes/score_number_label.tscn" type="PackedScene" id=4]
-[ext_resource path="res://scenes/camera_shake_2d.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scenes/time_counter.gd" type="Script" id=4]
+[ext_resource path="res://scenes/score_number_label.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scenes/camera_shake_2d.tscn" type="PackedScene" id=6]
 
 [sub_resource type="StyleBoxFlat" id=1]
 bg_color = Color( 0, 0, 0, 0.807843 )
@@ -74,6 +75,7 @@ custom_fonts/font = ExtResource( 3 )
 text = "0:00"
 align = 1
 valign = 1
+script = ExtResource( 4 )
 
 [node name="VBoxScoreContainer" type="VBoxContainer" parent="VBoxContainer/VBoxScoreTimeContainer"]
 margin_left = 242.0
@@ -89,7 +91,7 @@ text = "Score"
 align = 1
 valign = 1
 
-[node name="Score_Number_Label" parent="VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer" instance=ExtResource( 4 )]
+[node name="Score_Number_Label" parent="VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer" instance=ExtResource( 5 )]
 
 [node name="VictoryCenterContainer" type="CenterContainer" parent="."]
 anchor_right = 1.0
@@ -159,7 +161,7 @@ custom_constants/hseparation = 0
 shortcut_in_tooltip = false
 text = "Main Menu"
 
-[node name="CameraShake2D" parent="." instance=ExtResource( 5 )]
+[node name="CameraShake2D" parent="." instance=ExtResource( 6 )]
 [connection signal="explosive_pipe_destroyed" from="Grid" to="." method="_on_Grid_explosive_pipe_destroyed"]
 [connection signal="pipe_touch" from="Grid" to="." method="_on_Grid_pipe_touch"]
 [connection signal="pipes_destroyed" from="Grid" to="." method="_on_Grid_pipes_destroyed"]
