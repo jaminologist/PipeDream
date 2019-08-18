@@ -48,7 +48,7 @@ pipeline {
                     }
                 }
                 //Remove All contents of the Directory
-                //sh "rm /website/static/*"
+                sh "rm /website/static/*"
 
                 //Copy contents of export directory into Static directory
                 sh "cp -a client/exports/. website/static"
@@ -62,9 +62,9 @@ pipeline {
                 }
             }
         }
-        stage("Run PipeDream Website Image at port 17700"){
+        stage("Run PipeDream Website Image at port 80"){
             steps{
-                sh "docker run -p 17700:17700 -d --name pipedream-website pipedream-website"
+                sh "docker run -p 80:80 -d --name pipedream-website pipedream-website"
             }
         }
     }
