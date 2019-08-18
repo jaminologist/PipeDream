@@ -48,7 +48,7 @@ pipeline {
                     }
                 }
                 //Remove All contents of the Directory
-                sh "rm /website/static/*"
+                sh "rm website/static/*"
 
                 //Copy contents of export directory into Static directory
                 sh "cp -a client/exports/. website/static"
