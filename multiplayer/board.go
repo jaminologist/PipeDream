@@ -52,10 +52,10 @@ var pipeDirections = []PipeDirection{UP, RIGHT, DOWN, LEFT}
 type PipeLevel int
 
 const (
-	LEVEL_0 PipeLevel = 0
-	LEVEL_1 PipeLevel = 1
-	LEVEL_2 PipeLevel = 2
-	LEVEL_3 PipeLevel = 3
+	level0 PipeLevel = 0
+	level1 PipeLevel = 1
+	level2 PipeLevel = 2
+	level3 PipeLevel = 3
 )
 
 //BoardReport Sends back information about board updates that can be used to calculate client animations
@@ -180,6 +180,13 @@ func CopyBoard(b *Board) Board {
 	return newBoard
 }
 
+//RotatePipeClockwise Rotates the pipe at the given x and y clockwise if the board contains the given x and y
+func (b *Board) RotatePipeClockwise(x int, y int) {
+	if b.containsPoint(&point{x, y}) {
+		b.Cells[x][y].RotateClockWise()
+	}
+}
+
 //UpdateBoardPipeConnections loops through the board and checks to see which pipes are connected together
 //Returns true if a connections is found
 func (b *Board) UpdateBoardPipeConnections() []BoardReport {
@@ -246,13 +253,13 @@ func (b *Board) findAllClosedPipeTrees() []*pipeTree {
 
 				switch {
 				case size < level1Size:
-					pipeTree.Pipe.Level = LEVEL_0
+					pipeTree.Pipe.Level = level0
 				case size < level2Size:
-					pipeTree.Pipe.Level = LEVEL_1
+					pipeTree.Pipe.Level = level1
 				case size < level3Size:
-					pipeTree.Pipe.Level = LEVEL_2
+					pipeTree.Pipe.Level = level2
 				case size >= level3Size:
-					pipeTree.Pipe.Level = LEVEL_3
+					pipeTree.Pipe.Level = level3
 				}
 			}
 		}
@@ -351,10 +358,10 @@ func (b *Board) addSpecialPipesToBoardUsingClosedTrees(rootPipeTrees []*pipeTree
 		pipeTree := allPipes[rand.Intn(len(allPipes))]
 
 		switch rootpipeTree.Level {
-		case LEVEL_2:
+		case level2:
 			newPipe := newPipe(pipeTree.X, pipeTree.Y, ENDEXPLOSION2, getRandomPipeDirection())
 			b.Cells[pipeTree.X][pipeTree.Y] = &newPipe
-		case LEVEL_3:
+		case level3:
 			newPipe := newPipe(pipeTree.X, pipeTree.Y, ENDEXPLOSION3, getRandomPipeDirection())
 			b.Cells[pipeTree.X][pipeTree.Y] = &newPipe
 		}
@@ -436,8 +443,6 @@ func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementA
 	}
 
 	return
-	//newPipe := newRandomizedPipe(x, resetPosition, b.NumberOfColumns)
-	//b.Cells[x][resetPosition] = &newPipe
 }
 
 func (b *Board) containsPoint(p *point) bool {
