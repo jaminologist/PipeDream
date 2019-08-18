@@ -5,11 +5,14 @@ import (
 )
 
 type Player struct {
-	score int
-	conn  Conn
+	conn Conn
 
 	playerRegister
 	PlayerMessageReceiver
+}
+
+//AIPlayer Used to mock a player and fill spaces for waiting players
+type AIPlayer struct {
 }
 
 type Conn interface {
@@ -27,8 +30,7 @@ type PlayerMessageReceiver interface {
 
 func newPlayer(conn Conn) *Player {
 	return &Player{
-		score: 0,
-		conn:  conn,
+		conn: conn,
 	}
 }
 

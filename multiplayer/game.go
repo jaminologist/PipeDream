@@ -189,7 +189,7 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 			sendMessageToPlayer(&SinglePlayerBlitzGameState{
 				Board: info.Board,
 				Score: info.Score,
-			}, player, vpbg.versusLobby.messagesToPlayersChannel)
+			}, player, vpbg.versusLobby.lobbyToPlayerMessageCh)
 
 			opponent := vpbg.getOpponent(player)
 
@@ -198,7 +198,7 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 					Board: info.Board,
 					Score: info.Score,
 				},
-			}, opponent, vpbg.versusLobby.messagesToPlayersChannel)
+			}, opponent, vpbg.versusLobby.lobbyToPlayerMessageCh)
 
 		}
 
@@ -207,7 +207,7 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 			for player := range vpbg.playerGameInformation {
 				go sendMessageToPlayer(&TimeLimit{
 					Time: vpbg.timeLimit,
-				}, player, vpbg.versusLobby.messagesToPlayersChannel)
+				}, player, vpbg.versusLobby.lobbyToPlayerMessageCh)
 			}
 
 			vpbg.isOver = vpbg.timeLimit <= 0
@@ -228,7 +228,7 @@ OuterLoop:
 						Board:  info.Board,
 						IsOver: vpbg.isOver,
 						Score:  info.Score,
-					}, player, vpbg.versusLobby.messagesToPlayersChannel)
+					}, player, vpbg.versusLobby.lobbyToPlayerMessageCh)
 				}
 				break OuterLoop
 			}
@@ -248,7 +248,7 @@ OuterLoop:
 				IsOver:       vpbg.isOver,
 			}
 
-			sendMessageToPlayer(gameState, player, vpbg.versusLobby.messagesToPlayersChannel)
+			sendMessageToPlayer(gameState, player, vpbg.versusLobby.lobbyToPlayerMessageCh)
 
 			opponent := vpbg.getOpponent(player)
 			gameStateSentToOpponent := &VersusPlayerBlitzGamePlayerInformationSentToPlayers{
@@ -258,7 +258,7 @@ OuterLoop:
 				},
 			}
 
-			sendMessageToPlayer(gameStateSentToOpponent, opponent, vpbg.versusLobby.messagesToPlayersChannel)
+			sendMessageToPlayer(gameStateSentToOpponent, opponent, vpbg.versusLobby.lobbyToPlayerMessageCh)
 		}
 	}
 
