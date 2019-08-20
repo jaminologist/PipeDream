@@ -11,8 +11,6 @@ onready var time_display:TimeLabel = $VBoxContainer/VBoxScoreTimeContainer/VBoxT
 
 func _ready():
     get_node("VictoryCenterContainer").hide()
-    client.connect_to_url(Connections.VERSUS_PLAYER_WEBSOCKET_STRING)
-    client.connect("connection_failed", self, "_on_connection_error")
     
     client_json_reader.time_label = time_display
     client_json_reader.grid = $Grid
