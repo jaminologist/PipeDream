@@ -6,6 +6,9 @@ var score: int
 
 func set_score(score: int):
     self.score = score
+    
+func get_score():
+    return score
 
 func _process(delta):
     if score_displayed_to_player < score:
