@@ -7,20 +7,29 @@ var client = WebSocketClient.new()
 var centerMath:CenterMath = load("res://math/center_math.gd").new()
 var client_json_reader:ClientJsonReader = load("res://scenes/client_json_reader.gd").new()
 
+var new_style = load("res://assets/themes/game_over_box_theme.tres")
+
+
 onready var time_display:TimeLabel = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/HBoxContainer/VBoxContainer2/Time_Counter
+onready var player_score_label = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/HBoxContainer/VBoxContainer2/Score_Number_Label
+onready var victory_container_title_label: Label = $VictoryCenterContainer/PanelContainer/VBoxContainer/VictoryScoreTitle
+onready var victory_container_panel:PanelContainer = $VictoryCenterContainer/PanelContainer
+
 
 func _ready():
     get_node("VictoryCenterContainer").hide()
     
     client_json_reader.time_label = time_display
     client_json_reader.grid = $Grid
-    client_json_reader.player_score_label = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/HBoxContainer/VBoxContainer2/Score_Number_Label
+    client_json_reader.player_score_label = self.player_score_label
     #Make opponenet explosive Giblets a bit smaller
     $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid/GibletFactory.width = 1.5
     $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid/GibletFactory.height = 1.5
     $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid/GibletFactory.maxspeed = 250
     $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid/GibletFactory.expiryTime = 2.5
     $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid/GibletFactory.maxFadeTime = 1.0
+    
+    victory_container_panel.set('custom_styles/panel', new_style)
     pass 
     
 func _process(delta):
@@ -60,6 +69,15 @@ func poll_client_and_update():
         if json.get("IsOver", false):
             open_score_screen()
             
+            if json.get("IsWinner", false):
+                new_style.border_color = Color.green
+                victory_container_title_label.text = "You Win!"
+                
+            else:
+                new_style.border_color = Color.red
+                victory_container_title_label.text = "You Lose..."
+                
+            
         if json.get("EnemyInformation", null) != null:
             var enemyJson = json.get("EnemyInformation")
             
@@ -77,7 +95,7 @@ func update_time_counter_text(time_limit):
 func open_score_screen():
     $Grid.set_process(false)
     $VictoryCenterContainer.show()
-    $VictoryCenterContainer/PanelContainer/VBoxContainer/VictoryScoreLabel.text = str(score)
+    $VictoryCenterContainer/PanelContainer/VBoxContainer/VictoryScoreLabel.text = str(self.player_score_label.get_score())
     
 func set_score(score: int):
     $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/HBoxContainer/VBoxContainer2/Score_Number_Label.set_score(score)
