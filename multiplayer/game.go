@@ -137,9 +137,10 @@ type VersusPlayerBlitzGame struct {
 }
 
 type VersusPlayerBlitzGamePlayerInformation struct {
-	ID    int
-	Board *Board
-	Score int
+	ID       int
+	Board    *Board
+	Score    int
+	IsWinner bool
 }
 
 type VersusPlayerBlitzGamePlayerInformationSentToPlayers struct {
@@ -154,6 +155,7 @@ type VersusPlayerBlitzGameState struct {
 	BoardReports []BoardReport
 	Score        int
 	IsOver       bool
+	IsWinner     bool
 }
 
 func NewVersusPlayerBlitzGame(vl *VersusLobby, timeLimit time.Duration) *VersusPlayerBlitzGame {
@@ -168,6 +170,7 @@ func NewVersusPlayerBlitzGame(vl *VersusLobby, timeLimit time.Duration) *VersusP
 			i,
 			&newBoard,
 			0,
+			false,
 		}
 		i++
 	}
@@ -223,11 +226,23 @@ OuterLoop:
 		case isOver := <-vpbg.gameOverInputChannel:
 			if isOver {
 
+				var winner *Player
+				winnerScore := -1
 				for player, info := range vpbg.playerGameInformation {
-					sendMessageToPlayer(&SinglePlayerBlitzGameState{
-						Board:  info.Board,
-						IsOver: vpbg.isOver,
-						Score:  info.Score,
+					if info.Score > winnerScore {
+						winner = player
+						winnerScore = info.Score
+					}
+				}
+
+				vpbg.playerGameInformation[winner].IsWinner = true
+
+				for player, info := range vpbg.playerGameInformation {
+					sendMessageToPlayer(&VersusPlayerBlitzGameState{
+						Board:    info.Board,
+						IsOver:   vpbg.isOver,
+						Score:    info.Score,
+						IsWinner: info.IsWinner,
 					}, player, vpbg.versusLobby.lobbyToPlayerMessageCh)
 				}
 				break OuterLoop
