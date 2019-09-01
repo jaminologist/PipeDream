@@ -1,4 +1,4 @@
-package multiplayer
+package game
 
 import (
 	"reflect"

@@ -1,14 +1,27 @@
-package multiplayer
+package player
 
 import (
 	"log"
+
+	"bryjamin.com/multiplayer/message"
 )
 
 type Player struct {
-	conn Conn
+	Conn
 
-	playerRegister
+	PlayerRegister
 	PlayerMessageReceiver
+}
+
+type PlayerMessage struct {
+	MessageType int
+	Message     []byte
+	Player      *Player
+}
+
+type PlayerBoardInput struct {
+	Player *Player
+	message.BoardInput
 }
 
 //AIPlayer Used to mock a player and fill spaces for waiting players
@@ -20,37 +33,42 @@ type Conn interface {
 	WriteMessage(messageType int, data []byte) error
 }
 
-type playerRegister interface {
-	unregisterPlayer(player *Player)
+type PlayerRegister interface {
+	UnregisterPlayer(player *Player)
 }
 
 type PlayerMessageReceiver interface {
 	SendMessage(message *PlayerMessage)
 }
 
-func newPlayer(conn Conn) *Player {
+//NewPlayer Returns a new Player containing the given connection
+func NewPlayer(conn Conn) *Player {
 	return &Player{
-		conn: conn,
+		Conn: conn,
 	}
 }
 
 func (p *Player) run() {
 
 	for {
-		messageType, message, err := p.conn.ReadMessage()
+		messageType, message, err := p.ReadMessage()
 		if err != nil {
 			log.Println("Error Reading Message From Player, Unregistering Player")
-			p.unregisterPlayer(p)
+			p.UnregisterPlayer(p)
 			return
 		}
 
 		if p.PlayerMessageReceiver != nil {
 			p.SendMessage(&PlayerMessage{
-				messageType: messageType,
-				message:     message,
-				player:      p,
+				MessageType: messageType,
+				Message:     message,
+				Player:      p,
 			})
 		}
 	}
 
+}
+
+func (p *Player) Run() {
+	p.run()
 }
