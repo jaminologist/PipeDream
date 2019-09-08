@@ -11,11 +11,13 @@ var client_json_reader:ClientJsonReader = load("res://scenes/client_json_reader.
 onready var time_display:TimeLabel = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/Time_Counter
 
 func _ready():
+    setup()
+    
+func setup():
     get_node("VictoryCenterContainer").hide()
     client.connect_to_url(Connections.SINGLE_PLAYER_WEBSOCKET_STRING)
     client.connect("connection_failed", self, "_on_connection_error")  
     setup_client_json_reader()
-    pass 
     
 func setup_client_json_reader():
     client_json_reader.time_label = time_display
