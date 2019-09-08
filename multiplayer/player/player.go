@@ -48,27 +48,31 @@ func NewPlayer(conn Conn) *Player {
 	}
 }
 
-func (p *Player) run() {
-
+func (p *Player) Run() {
 	for {
-		messageType, message, err := p.ReadMessage()
+		err := p.run()
 		if err != nil {
-			log.Println("Error Reading Message From Player, Unregistering Player")
-			p.UnregisterPlayer(p)
 			return
 		}
-
-		if p.PlayerMessageReceiver != nil {
-			p.SendMessage(&PlayerMessage{
-				MessageType: messageType,
-				Message:     message,
-				Player:      p,
-			})
-		}
 	}
-
 }
 
-func (p *Player) Run() {
-	p.run()
+func (p *Player) run() error {
+	messageType, message, err := p.ReadMessage()
+	if err != nil {
+		log.Println("Error Reading Message From Player, Unregistering Player")
+		if p.PlayerRegister != nil {
+			p.UnregisterPlayer(p)
+		}
+		return err
+	}
+
+	if p.PlayerMessageReceiver != nil {
+		p.SendMessage(&PlayerMessage{
+			MessageType: messageType,
+			Message:     message,
+			Player:      p,
+		})
+	}
+	return nil
 }
