@@ -1,20 +1,20 @@
-package multiplayer_test
+package game_test
 
 import (
 	"testing"
 	"time"
 
-	"bryjamin.com/multiplayer"
+	"bryjamin.com/multiplayer/game"
 )
 
 //Allows you to create a board in a human readable fashion for easier testing
-func createTestBoard(numberOfColumns int, numberOfRows int, rowsTopToBottom ...[]*multiplayer.Pipe) multiplayer.Board {
-	testBoard := multiplayer.Board{
-		Cells: make([][]*multiplayer.Pipe, numberOfColumns),
+func createTestBoard(numberOfColumns int, numberOfRows int, rowsTopToBottom ...[]*game.Pipe) game.Board {
+	testBoard := game.Board{
+		Cells: make([][]*game.Pipe, numberOfColumns),
 	}
 
 	for i := 0; i < len(testBoard.Cells); i++ {
-		testBoard.Cells[i] = make([]*multiplayer.Pipe, numberOfRows)
+		testBoard.Cells[i] = make([]*game.Pipe, numberOfRows)
 	}
 
 	height := numberOfRows - 1
@@ -33,9 +33,9 @@ func createTestBoard(numberOfColumns int, numberOfRows int, rowsTopToBottom ...[
 func TestBoard_UpdateBoardPipeConnections3x3(t *testing.T) {
 
 	testBoard := createTestBoard(3, 3,
-		[]*multiplayer.Pipe{&multiplayer.Pipe{Type: multiplayer.END, Direction: multiplayer.DOWN}, &multiplayer.Pipe{Type: multiplayer.END, Direction: multiplayer.UP}, &multiplayer.Pipe{Type: multiplayer.END, Direction: multiplayer.UP}},
-		[]*multiplayer.Pipe{&multiplayer.Pipe{Type: multiplayer.LPIPE, Direction: multiplayer.UP}, &multiplayer.Pipe{Type: multiplayer.LINE, Direction: multiplayer.LEFT}, &multiplayer.Pipe{Type: multiplayer.LPIPE, Direction: multiplayer.DOWN}},
-		[]*multiplayer.Pipe{&multiplayer.Pipe{Type: multiplayer.END, Direction: multiplayer.DOWN}, &multiplayer.Pipe{Type: multiplayer.LPIPE, Direction: multiplayer.UP}, &multiplayer.Pipe{Type: multiplayer.END, Direction: multiplayer.UP}},
+		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.DOWN}, &game.Pipe{Type: game.END, Direction: game.UP}, &game.Pipe{Type: game.END, Direction: game.UP}},
+		[]*game.Pipe{&game.Pipe{Type: game.LPIPE, Direction: game.UP}, &game.Pipe{Type: game.LINE, Direction: game.LEFT}, &game.Pipe{Type: game.LPIPE, Direction: game.DOWN}},
+		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.DOWN}, &game.Pipe{Type: game.LPIPE, Direction: game.UP}, &game.Pipe{Type: game.END, Direction: game.UP}},
 	)
 
 	/*
@@ -51,26 +51,26 @@ func TestBoard_UpdateBoardPipeConnections3x3(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		b        *multiplayer.Board
-		expected []multiplayer.BoardReport
+		b        *game.Board
+		expected []game.BoardReport
 	}{
-		{name: "3x3 Test", b: &testBoard, expected: []multiplayer.BoardReport{
+		{name: "3x3 Test", b: &testBoard, expected: []game.BoardReport{
 			{
-				DestroyedPipes: []multiplayer.DestroyedPipe{
-					multiplayer.DestroyedPipe{Type: multiplayer.END, X: 0, Y: 2},
-					multiplayer.DestroyedPipe{Type: multiplayer.LPIPE, X: 0, Y: 1},
-					multiplayer.DestroyedPipe{Type: multiplayer.LINE, X: 1, Y: 1},
-					multiplayer.DestroyedPipe{Type: multiplayer.LPIPE, X: 2, Y: 1},
-					multiplayer.DestroyedPipe{Type: multiplayer.END, X: 2, Y: 0},
+				DestroyedPipes: []game.DestroyedPipe{
+					game.DestroyedPipe{Type: game.END, X: 0, Y: 2},
+					game.DestroyedPipe{Type: game.LPIPE, X: 0, Y: 1},
+					game.DestroyedPipe{Type: game.LINE, X: 1, Y: 1},
+					game.DestroyedPipe{Type: game.LPIPE, X: 2, Y: 1},
+					game.DestroyedPipe{Type: game.END, X: 2, Y: 0},
 				},
-				PipeMovementAnimations: []multiplayer.PipeMovementAnimation{
-					multiplayer.PipeMovementAnimation{X: 0, StartY: 2, EndY: 1, TravelTime: time.Millisecond * 100},
-					multiplayer.PipeMovementAnimation{X: 1, StartY: 2, EndY: 1, TravelTime: time.Millisecond * 100},
-					multiplayer.PipeMovementAnimation{X: 2, StartY: 2, EndY: 0, TravelTime: time.Millisecond * 200},
-					multiplayer.PipeMovementAnimation{X: 0, StartY: 3, EndY: 2, TravelTime: time.Millisecond * 100},
-					multiplayer.PipeMovementAnimation{X: 1, StartY: 3, EndY: 2, TravelTime: time.Millisecond * 100},
-					multiplayer.PipeMovementAnimation{X: 2, StartY: 3, EndY: 1, TravelTime: time.Millisecond * 200},
-					multiplayer.PipeMovementAnimation{X: 2, StartY: 4, EndY: 2, TravelTime: time.Millisecond * 200},
+				PipeMovementAnimations: []game.PipeMovementAnimation{
+					game.PipeMovementAnimation{X: 0, StartY: 2, EndY: 1, TravelTime: time.Millisecond * 100},
+					game.PipeMovementAnimation{X: 1, StartY: 2, EndY: 1, TravelTime: time.Millisecond * 100},
+					game.PipeMovementAnimation{X: 2, StartY: 2, EndY: 0, TravelTime: time.Millisecond * 200},
+					game.PipeMovementAnimation{X: 0, StartY: 3, EndY: 2, TravelTime: time.Millisecond * 100},
+					game.PipeMovementAnimation{X: 1, StartY: 3, EndY: 2, TravelTime: time.Millisecond * 100},
+					game.PipeMovementAnimation{X: 2, StartY: 3, EndY: 1, TravelTime: time.Millisecond * 200},
+					game.PipeMovementAnimation{X: 2, StartY: 4, EndY: 2, TravelTime: time.Millisecond * 200},
 				},
 			},
 		}},
@@ -110,7 +110,7 @@ func TestBoard_UpdateBoardPipeConnections3x3(t *testing.T) {
 	}
 }
 
-func containsDestroyedPipe(pipes []multiplayer.DestroyedPipe, pipe multiplayer.DestroyedPipe) bool {
+func containsDestroyedPipe(pipes []game.DestroyedPipe, pipe game.DestroyedPipe) bool {
 
 	for i := 0; i < len(pipes); i++ {
 		if pipes[i] == pipe {
@@ -120,7 +120,7 @@ func containsDestroyedPipe(pipes []multiplayer.DestroyedPipe, pipe multiplayer.D
 	return false
 }
 
-func containsPipeMovementAnimation(pipes []multiplayer.PipeMovementAnimation, pipe multiplayer.PipeMovementAnimation) bool {
+func containsPipeMovementAnimation(pipes []game.PipeMovementAnimation, pipe game.PipeMovementAnimation) bool {
 
 	for i := 0; i < len(pipes); i++ {
 		if pipes[i] == pipe {

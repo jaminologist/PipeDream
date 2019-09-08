@@ -2,6 +2,8 @@ package multiplayer
 
 import (
 	"testing"
+
+	"bryjamin.com/multiplayer/player"
 )
 
 func TestServer_Run(t *testing.T) {
@@ -54,7 +56,7 @@ func TestVersusLobbyManager_handleNewPlayer(t *testing.T) {
 			vlm := NewVersusLobbyManager()
 
 			for i := 0; i < tt.args.numberOfPlayersToAdd; i++ {
-				newPlayer := newPlayer(&MockConn{})
+				newPlayer := player.NewPlayer(&MockConn{})
 				vlm.handleNewPlayer(newPlayer)
 			}
 
