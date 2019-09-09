@@ -11,7 +11,7 @@ import (
 	"bryjamin.com/multiplayer/player"
 )
 
-const SINGLEPLAYERBLITZGAMETIMELIMIT = 5
+const SINGLEPLAYERBLITZGAMETIMELIMIT = 90
 
 type SinglePlayerLobby struct {
 	player *player.Player

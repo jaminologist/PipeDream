@@ -14,6 +14,7 @@ func main() {
 	go server.Run()
 	http.HandleFunc("/singlePlayerBlitzGame", server.CreateSinglePlayerSession)
 	http.HandleFunc("/versusBlitzGame", server.FindTwoPlayerSession)
+	http.HandleFunc("/aiBlitzGame", server.FindAISession)
 
 	log.Fatal(http.ListenAndServe(":5080", nil))
 }

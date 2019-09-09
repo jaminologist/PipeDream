@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"time"
 
 	"bryjamin.com/multiplayer/message"
@@ -12,6 +13,8 @@ type AIBlitzGame struct {
 	timeLimit time.Duration
 	isOver    bool
 	score     int
+
+	moves []*point
 
 	aiInputChannel       chan bool
 	playerOutputChannel  chan *message.Message
@@ -82,7 +85,16 @@ OuterLoop:
 				break OuterLoop
 			}
 		case _ = <-g.aiInputChannel:
-			g.board.RotatePipeClockwise(0, 0)
+
+			if len(g.moves) <= 0 {
+				log.Printf("New BoardSolve")
+				g.moves, _ = BoardSolve(g.board)
+				log.Println(g.moves)
+			}
+			var move *point
+			move, g.moves = g.moves[0], g.moves[1:]
+			log.Println("Move:", move)
+			g.board.RotatePipeClockwise(move.x, move.y)
 			boardReports := g.board.UpdateBoardPipeConnections()
 
 			g.score += calculateScoreFromBoardReports(boardReports)
@@ -96,7 +108,7 @@ OuterLoop:
 			send.SendMessageToAll(&gameState, g.playerOutputChannel)
 
 			go func() { //To avoid sending too much data to the client this adds a pause before the next AI move.
-				time.Sleep(serverTick / 2)
+				time.Sleep(serverTick / 4)
 				g.aiInputChannel <- true
 			}()
 		}

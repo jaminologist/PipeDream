@@ -87,6 +87,10 @@ type point struct {
 	y int
 }
 
+func newPoint(x int, y int) *point {
+	return &point{x, y}
+}
+
 var allTypes = []PipeType{
 	LINE,
 	LPIPE,
@@ -457,7 +461,7 @@ func (b *Board) containsPoint(p *point) bool {
 func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, visitedPoints map[point]bool, board *Board) bool {
 
 	isClosedTree := true
-	pointsTo := rootPipeTree.pointsTo(rootPipeTree.x, rootPipeTree.y)
+	pointsTo := rootPipeTree.pointsTo()
 
 	for i := 0; i < len(pointsTo); i++ {
 
@@ -466,7 +470,7 @@ func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, visitedP
 		if board.containsPoint(&pointToPoint) {
 
 			childTree := newPipeTree(board.Cells[pointToPoint.x][pointToPoint.y], pointToPoint.x, pointToPoint.y)
-			childPointsTo := childTree.pointsTo(childTree.x, childTree.y)
+			childPointsTo := childTree.pointsTo()
 
 			childPointsToParent := false
 
@@ -562,32 +566,46 @@ func (p *Pipe) RotateClockWise() {
 }
 
 //PointsTo Returns which x and y this pipe points to from the give x and y
-func (p *Pipe) pointsTo(x int, y int) []point {
+func (p *Pipe) pointsTo() []point {
+
+	currentPoint := point{p.X, p.Y}
 
 	switch p.Type {
 	case END, ENDEXPLOSION2, ENDEXPLOSION3:
-		return []point{pointFromDirection(point{x, y}, p.Direction)}
+		return []point{pointFromDirection(currentPoint, p.Direction)}
 	case LINE:
 		switch p.Direction {
 		case UP, DOWN:
-			return []point{pointFromDirection(point{x, y}, UP), pointFromDirection(point{x, y}, DOWN)}
+			return []point{pointFromDirection(currentPoint, UP), pointFromDirection(currentPoint, DOWN)}
 		case LEFT, RIGHT:
-			return []point{pointFromDirection(point{x, y}, LEFT), pointFromDirection(point{x, y}, RIGHT)}
+			return []point{pointFromDirection(currentPoint, LEFT), pointFromDirection(currentPoint, RIGHT)}
 		}
 	case LPIPE:
 		switch p.Direction {
 		case UP:
-			return []point{pointFromDirection(point{x, y}, UP), pointFromDirection(point{x, y}, RIGHT)}
+			return []point{pointFromDirection(currentPoint, UP), pointFromDirection(currentPoint, RIGHT)}
 		case RIGHT:
-			return []point{pointFromDirection(point{x, y}, RIGHT), pointFromDirection(point{x, y}, DOWN)}
+			return []point{pointFromDirection(currentPoint, RIGHT), pointFromDirection(currentPoint, DOWN)}
 		case DOWN:
-			return []point{pointFromDirection(point{x, y}, DOWN), pointFromDirection(point{x, y}, LEFT)}
+			return []point{pointFromDirection(currentPoint, DOWN), pointFromDirection(currentPoint, LEFT)}
 		case LEFT:
-			return []point{pointFromDirection(point{x, y}, LEFT), pointFromDirection(point{x, y}, UP)}
+			return []point{pointFromDirection(currentPoint, LEFT), pointFromDirection(currentPoint, UP)}
 
 		}
 	}
 	return []point{}
+}
+
+func (p *Pipe) DoesPipePointTo(x int, y int) bool {
+	points := p.pointsTo()
+
+	for i := 0; i < len(points); i++ {
+		if p.X == points[i].x && p.Y == points[i].y {
+			return true
+		}
+	}
+
+	return false
 }
 
 func pointFromDirection(p point, d PipeDirection) point {
