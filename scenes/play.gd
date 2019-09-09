@@ -9,6 +9,7 @@ var centerMath:CenterMath = load("res://math/center_math.gd").new()
 var client_json_reader:ClientJsonReader = load("res://scenes/client_json_reader.gd").new()
 
 onready var time_display:TimeLabel = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/Time_Counter
+onready var score_label:ScoreLabel = $VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer/Score_Number_Label
 
 func _ready():
     setup()
@@ -22,7 +23,7 @@ func setup():
 func setup_client_json_reader():
     client_json_reader.time_label = time_display
     client_json_reader.grid = $Grid
-    client_json_reader.player_score_label = $VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer/Score_Number_Label
+    client_json_reader.player_score_label = score_label
     
 func _process(delta):
     poll_client_and_update()
@@ -55,7 +56,7 @@ func update_time_counter_text(time_limit):
 func open_score_screen():
     $Grid.set_process(false)
     $VictoryCenterContainer.show()
-    $VictoryCenterContainer/PanelContainer/VBoxContainer/VictoryScoreLabel.text = str(score)
+    $VictoryCenterContainer/PanelContainer/VBoxContainer/VictoryScoreLabel.text = str(score_label.get_score())
     
 func set_score(score: int):
     get_node("VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer/Score_Number_Label").set_score(score)
