@@ -1,3 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+#Added because Godot seems to switch to CRLF when opened on windows so git picks up these line ending changes.
+#This could be incorrect but this was my thinking at the time
 * text eol=lf
