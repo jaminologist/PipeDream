@@ -6,13 +6,13 @@ import "math/rand"
 
 //Function that accepts a board and returns a array of board inputs to reach a solve
 
-func BoardSolve(b *Board) ([]*point, error) {
+func BoardSolve(b *Board) ([]*Point, error) {
 
-	return []*point{&point{rand.Intn(7), rand.Intn(7)}, &point{rand.Intn(7), rand.Intn(7)}, &point{rand.Intn(7), rand.Intn(7)}}, nil
+	return []*Point{&Point{rand.Intn(7), rand.Intn(7)}, &Point{rand.Intn(7), rand.Intn(7)}, &Point{rand.Intn(7), rand.Intn(7)}}, nil
 }
 
-//Function that takes in a point and returns if there is a solve or not.
-func findSolution(b *Board) ([]*point, bool) {
+//Function that takes in a Point and returns if there is a solve or not.
+func findSolution(b *Board) ([]*Point, bool) {
 
 	/*loop:
 	for x := 0; x < len(b.Cells); x++ {
@@ -31,15 +31,15 @@ func findSolution(b *Board) ([]*point, bool) {
 
 }
 
-func findPathAtPoint(b *Board, x int, y int) ([]*point, bool) {
+func findPathAtPoint(b *Board, x int, y int) ([]*Point, bool) {
 
-	visitedMap := map[*point]bool{}
+	visitedMap := map[*Point]bool{}
 	currentPoint := newPoint(x, y)
 	visitedMap[currentPoint] = true
 
 	pipe := b.Cells[x][y]
 
-	pointArray := make([]*point, 0)
+	pointArray := make([]*Point, 0)
 
 	//Rotate up to three times
 	maxNumberOfRotates := getMaxNumberOfRotations(pipe)
@@ -54,7 +54,7 @@ func findPathAtPoint(b *Board, x int, y int) ([]*point, bool) {
 			return nil, false
 		}
 
-		pointArray = append(pointArray, &point{x, y})
+		pointArray = append(pointArray, &Point{x, y})
 	}
 
 	//_ := b.Cells[x][y]
@@ -64,7 +64,7 @@ func findPathAtPoint(b *Board, x int, y int) ([]*point, bool) {
 	return nil, false
 }
 
-func findPathInChild() {
+func findPathInChild(vistedMap map[*Point]bool, b *Board, parentPipe *Pipe, childPipe *Pipe) {
 
 }
 
@@ -72,6 +72,16 @@ func isPipePointingOutsideOfBoard(pipe *Pipe, b *Board) bool {
 	pointsTo := pipe.pointsTo()
 	for i := 0; i < len(pointsTo); i++ {
 		if !b.containsPoint(&pointsTo[i]) {
+			return true
+		}
+	}
+	return false
+}
+
+func isPipePointingToPipe(pipe1 *Pipe, pipe2 *Pipe) bool {
+
+	for _, point := range pipe1.pointsTo() {
+		if point.X == pipe2.X && point.Y == pipe2.Y {
 			return true
 		}
 	}
@@ -89,7 +99,7 @@ func getPipesThatAreBeingPointedTo(pipe *Pipe, b *Board) ([]*Pipe, bool) {
 			return nil, false
 		}
 
-		pipesPointedTo = append(pipesPointedTo, b.Cells[pointsTo[i].x][pointsTo[i].y])
+		pipesPointedTo = append(pipesPointedTo, b.Cells[pointsTo[i].X][pointsTo[i].Y])
 	}
 
 	return pipesPointedTo, true

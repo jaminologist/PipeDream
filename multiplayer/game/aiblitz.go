@@ -14,7 +14,7 @@ type AIBlitzGame struct {
 	isOver    bool
 	score     int
 
-	moves []*point
+	moves []*Point
 
 	aiInputChannel       chan bool
 	playerOutputChannel  chan *message.Message
@@ -91,10 +91,10 @@ OuterLoop:
 				g.moves, _ = BoardSolve(g.board)
 				log.Println(g.moves)
 			}
-			var move *point
+			var move *Point
 			move, g.moves = g.moves[0], g.moves[1:]
 			log.Println("Move:", move)
-			g.board.RotatePipeClockwise(move.x, move.y)
+			g.board.RotatePipeClockwise(move.X, move.Y)
 			boardReports := g.board.UpdateBoardPipeConnections()
 
 			g.score += calculateScoreFromBoardReports(boardReports)
