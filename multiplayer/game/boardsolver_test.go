@@ -1,7 +1,6 @@
 package game_test
 
 import (
-	"reflect"
 	"testing"
 
 	"bryjamin.com/multiplayer/game"
@@ -10,7 +9,7 @@ import (
 
 func TestBoardSolve(t *testing.T) {
 
-	_ = pkg.CreateTestBoard(1, 2,
+	testBoard := pkg.CreateTestBoard(1, 2,
 		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.UP}},
 		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.UP}})
 
@@ -23,7 +22,7 @@ func TestBoardSolve(t *testing.T) {
 		want    []*game.Point
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{name: "Let's see how to goes", args: args{b: &testBoard}, want: []*game.Point{&game.Point{0, 1}, &game.Point{0, 1}}, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -32,8 +31,11 @@ func TestBoardSolve(t *testing.T) {
 				t.Errorf("BoardSolve() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("BoardSolve() = %v, want %v", got, tt.want)
+
+			for index, point := range tt.want {
+				if *point != *got[index] {
+					t.Errorf("BoardSolve() = %v, want %v", *got[index], *point)
+				}
 			}
 		})
 	}

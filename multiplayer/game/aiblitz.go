@@ -31,7 +31,7 @@ type AIBlitzGameState struct {
 
 func NewAIBlitzGame(playerOutputChannel chan *message.Message, timeLimit time.Duration) *AIBlitzGame {
 
-	board := NewBoard(7, 7)
+	board := NewBoard(1, 2)
 
 	return &AIBlitzGame{
 		timeLimit:            timeLimit,

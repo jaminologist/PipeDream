@@ -1,14 +1,11 @@
 package game
 
-import "math/rand"
-
 //The purpose of this is to solve the
 
 //Function that accepts a board and returns a array of board inputs to reach a solve
 
 func BoardSolve(b *Board) ([]*Point, error) {
-
-	return []*Point{&Point{rand.Intn(7), rand.Intn(7)}, &Point{rand.Intn(7), rand.Intn(7)}, &Point{rand.Intn(7), rand.Intn(7)}}, nil
+	return []*Point{&Point{0, 1}, &Point{5, 1}}, nil
 }
 
 //Function that takes in a Point and returns if there is a solve or not.
@@ -33,21 +30,23 @@ func findSolution(b *Board) ([]*Point, bool) {
 
 func findPathAtPoint(b *Board, x int, y int) ([]*Point, bool) {
 
+	//Add current square to visited points
 	visitedMap := map[*Point]bool{}
 	currentPoint := newPoint(x, y)
 	visitedMap[currentPoint] = true
 
 	pipe := b.Cells[x][y]
-
 	pointArray := make([]*Point, 0)
 
-	//Rotate up to three times
+	//Number of times you check for a path
 	maxNumberOfRotates := getMaxNumberOfRotations(pipe)
 	for i := 0; i < maxNumberOfRotates; i++ {
 
-		_, ok := getPipesThatAreBeingPointedTo(pipe, b)
+		pipes, ok := getPipesThatAreBeingPointedTo(pipe, b)
 		if ok {
-
+			for _, childPipe := range pipes {
+				_ = childPipe
+			}
 		}
 
 		if i == maxNumberOfRotates-1 { //No path found leave
