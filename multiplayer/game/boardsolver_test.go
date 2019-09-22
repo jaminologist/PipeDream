@@ -11,7 +11,7 @@ func TestBoardSolve(t *testing.T) {
 
 	testBoard := pkg.CreateTestBoard(1, 2,
 		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.UP}},
-		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.UP}})
+		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.DOWN}})
 
 	type args struct {
 		b *game.Board
@@ -22,7 +22,7 @@ func TestBoardSolve(t *testing.T) {
 		want    []*game.Point
 		wantErr bool
 	}{
-		{name: "Let's see how to goes", args: args{b: &testBoard}, want: []*game.Point{&game.Point{0, 1}, &game.Point{0, 1}}, wantErr: false},
+		{name: "Let's see how to goes", args: args{b: &testBoard}, want: []*game.Point{&game.Point{0, 0}, &game.Point{0, 0}, &game.Point{0, 1}, &game.Point{0, 1}}, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

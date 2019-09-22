@@ -1,28 +1,34 @@
 package game
 
+import "fmt"
+
 //The purpose of this is to solve the
 
 //Function that accepts a board and returns a array of board inputs to reach a solve
 
 func BoardSolve(b *Board) ([]*Point, error) {
-	return []*Point{&Point{0, 1}, &Point{5, 1}}, nil
+
+	if points, ok := findSolution(b); ok {
+		return points, nil
+	}
+
+	return []*Point{}, nil
 }
 
 //Function that takes in a Point and returns if there is a solve or not.
 func findSolution(b *Board) ([]*Point, bool) {
 
-	/*loop:
+	///*loop:
 	for x := 0; x < len(b.Cells); x++ {
 		for y := 0; y < len(b.Cells[x]); y++ {
 
 			pointArray, pathFound := findPathAtPoint(b, x, y)
 
-			if true {
-
-				break loop
+			if pathFound {
+				return pointArray, true
 			}
 		}
-	}*/
+	}
 
 	return nil, false
 
@@ -31,40 +37,110 @@ func findSolution(b *Board) ([]*Point, bool) {
 func findPathAtPoint(b *Board, x int, y int) ([]*Point, bool) {
 
 	//Add current square to visited points
-	visitedMap := map[*Point]bool{}
-	currentPoint := newPoint(x, y)
-	visitedMap[currentPoint] = true
+	currentPoint := *newPoint(x, y)
 
-	pipe := b.Cells[x][y]
-	pointArray := make([]*Point, 0)
+	pipe := copyPipe(b.Cells[x][y])
 
 	//Number of times you check for a path
 	maxNumberOfRotates := getMaxNumberOfRotations(pipe)
 	for i := 0; i < maxNumberOfRotates; i++ {
 
+		visitedMap := map[Point]bool{}
+		visitedMap[currentPoint] = true
+
 		pipes, ok := getPipesThatAreBeingPointedTo(pipe, b)
 		if ok {
+			pointsArray := make([]*Point, 0)
+			pathFound := true
 			for _, childPipe := range pipes {
-				_ = childPipe
+				points, ok := findPathInChild(visitedMap, b, pipe, childPipe)
+
+				//prepend
+				pointsArray = append(points, pointsArray...)
+				if !ok {
+					pathFound = false
+					break
+				} else {
+					for _, point := range points {
+						visitedMap[*point] = true
+					}
+				}
+			}
+
+			if pathFound {
+
+				//Add number of points based on number of rotations
+				for j := 0; j < i; j++ {
+					pointsArray = append([]*Point{&Point{X: pipe.X, Y: pipe.Y}}, pointsArray...)
+				}
+
+				return pointsArray, true
 			}
 		}
-
-		if i == maxNumberOfRotates-1 { //No path found leave
-			return nil, false
-		}
-
-		pointArray = append(pointArray, &Point{x, y})
+		pipe.RotateClockWise()
 	}
-
-	//_ := b.Cells[x][y]
-
-	//pipesPointsTo :=
-
 	return nil, false
 }
 
-func findPathInChild(vistedMap map[*Point]bool, b *Board, parentPipe *Pipe, childPipe *Pipe) {
+func findPathInChild(originalVistedMap map[Point]bool, b *Board, parentPipe *Pipe, originalPipe *Pipe) ([]*Point, bool) {
 
+	pipe := copyPipe(originalPipe)
+	currentPoint := *newPoint(pipe.X, pipe.Y)
+	maxNumberOfRotates := getMaxNumberOfRotations(pipe)
+
+	fmt.Println(pipe.X, ",", pipe.Y)
+
+	for i := 0; i < maxNumberOfRotates; i++ {
+
+		//reset visited points for new pipe rotation
+		newVisitedMap := map[Point]bool{}
+
+		for k, v := range originalVistedMap {
+			newVisitedMap[k] = v
+		}
+
+		newVisitedMap[currentPoint] = true
+
+		if isPipePointingToPipe(pipe, parentPipe) && !isPipePointingOutsideOfBoard(pipe, b) {
+
+			if pipes, ok := getPipesThatAreBeingPointedTo(pipe, b); ok {
+				pointsArray := make([]*Point, 0)
+				pathFound := true
+				for _, childPipe := range pipes {
+
+					//check if pipe has been visited
+					if _, isVisited := newVisitedMap[Point{childPipe.X, childPipe.Y}]; !isVisited {
+						points, ok := findPathInChild(newVisitedMap, b, pipe, childPipe)
+
+						//prepend
+						pointsArray = append(points, pointsArray...)
+						if !ok {
+							pathFound = false
+							break
+						} else {
+							for _, point := range points {
+								newVisitedMap[*point] = true
+							}
+						}
+					}
+				}
+
+				if pathFound {
+
+					//Add number of points based on number of rotations
+					for j := 0; j < i; j++ {
+						pointsArray = append([]*Point{&Point{X: pipe.X, Y: pipe.Y}}, pointsArray...)
+					}
+
+					return pointsArray, true
+				}
+			}
+		}
+
+		pipe.RotateClockWise()
+	}
+
+	return nil, false
 }
 
 func isPipePointingOutsideOfBoard(pipe *Pipe, b *Board) bool {
@@ -110,5 +186,14 @@ func getMaxNumberOfRotations(p *Pipe) int {
 		return 2
 	default:
 		return 4
+	}
+}
+
+func copyPipe(p *Pipe) *Pipe {
+	return &Pipe{
+		X:         p.X,
+		Y:         p.Y,
+		Type:      p.Type,
+		Direction: p.Direction,
 	}
 }

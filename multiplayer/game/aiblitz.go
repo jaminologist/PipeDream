@@ -31,7 +31,7 @@ type AIBlitzGameState struct {
 
 func NewAIBlitzGame(playerOutputChannel chan *message.Message, timeLimit time.Duration) *AIBlitzGame {
 
-	board := NewBoard(1, 2)
+	board := NewBoard(4, 4)
 
 	return &AIBlitzGame{
 		timeLimit:            timeLimit,
@@ -92,9 +92,14 @@ OuterLoop:
 				log.Println(g.moves)
 			}
 			var move *Point
-			move, g.moves = g.moves[0], g.moves[1:]
-			log.Println("Move:", move)
-			g.board.RotatePipeClockwise(move.X, move.Y)
+
+			if len(g.moves) > 0 {
+				move, g.moves = g.moves[0], g.moves[1:]
+				log.Println("Move:", move)
+				g.board.RotatePipeClockwise(move.X, move.Y)
+			} else {
+				log.Println("No Moves Available.")
+			}
 			boardReports := g.board.UpdateBoardPipeConnections()
 
 			g.score += calculateScoreFromBoardReports(boardReports)
