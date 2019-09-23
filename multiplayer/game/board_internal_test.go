@@ -67,26 +67,26 @@ func TestPipe_pointsTo(t *testing.T) {
 		name string
 		p    *Pipe
 		args args
-		want []point
+		want []Point
 	}{
-		{name: "END", p: &Pipe{Type: END, Direction: UP}, args: args{0, 0}, want: []point{point{0, 1}}},
-		{name: "END", p: &Pipe{Type: END, Direction: RIGHT}, args: args{0, 0}, want: []point{point{1, 0}}},
-		{name: "END", p: &Pipe{Type: END, Direction: DOWN}, args: args{0, 0}, want: []point{point{0, -1}}},
-		{name: "END", p: &Pipe{Type: END, Direction: LEFT}, args: args{0, 0}, want: []point{point{-1, 0}}},
+		{name: "END", p: &Pipe{Type: END, Direction: UP}, args: args{0, 0}, want: []Point{Point{0, 1}}},
+		{name: "END", p: &Pipe{Type: END, Direction: RIGHT}, args: args{0, 0}, want: []Point{Point{1, 0}}},
+		{name: "END", p: &Pipe{Type: END, Direction: DOWN}, args: args{0, 0}, want: []Point{Point{0, -1}}},
+		{name: "END", p: &Pipe{Type: END, Direction: LEFT}, args: args{0, 0}, want: []Point{Point{-1, 0}}},
 
-		{name: "LINE/UP", p: &Pipe{Type: LINE, Direction: UP}, args: args{0, 0}, want: []point{point{0, 1}, point{0, -1}}},
-		{name: "LINE/RIGHT", p: &Pipe{Type: LINE, Direction: RIGHT}, args: args{0, 0}, want: []point{point{-1, 0}, point{1, 0}}},
-		{name: "LINE/DOWN", p: &Pipe{Type: LINE, Direction: DOWN}, args: args{0, 0}, want: []point{point{0, 1}, point{0, -1}}},
-		{name: "LINE/LEFT", p: &Pipe{Type: LINE, Direction: LEFT}, args: args{0, 0}, want: []point{point{-1, 0}, point{1, 0}}},
+		{name: "LINE/UP", p: &Pipe{Type: LINE, Direction: UP}, args: args{0, 0}, want: []Point{Point{0, 1}, Point{0, -1}}},
+		{name: "LINE/RIGHT", p: &Pipe{Type: LINE, Direction: RIGHT}, args: args{0, 0}, want: []Point{Point{-1, 0}, Point{1, 0}}},
+		{name: "LINE/DOWN", p: &Pipe{Type: LINE, Direction: DOWN}, args: args{0, 0}, want: []Point{Point{0, 1}, Point{0, -1}}},
+		{name: "LINE/LEFT", p: &Pipe{Type: LINE, Direction: LEFT}, args: args{0, 0}, want: []Point{Point{-1, 0}, Point{1, 0}}},
 
-		{name: "LPIPE/UP", p: &Pipe{Type: LPIPE, Direction: UP}, args: args{0, 0}, want: []point{point{0, 1}, point{1, 0}}},
-		{name: "LPIPE/RIGHT", p: &Pipe{Type: LPIPE, Direction: RIGHT}, args: args{0, 0}, want: []point{point{1, 0}, point{0, -1}}},
-		{name: "LPIPE/DOWN", p: &Pipe{Type: LPIPE, Direction: DOWN}, args: args{0, 0}, want: []point{point{0, -1}, point{-1, 0}}},
-		{name: "LPIPE/LEFT", p: &Pipe{Type: LPIPE, Direction: LEFT}, args: args{0, 0}, want: []point{point{-1, 0}, point{0, 1}}},
+		{name: "LPIPE/UP", p: &Pipe{Type: LPIPE, Direction: UP}, args: args{0, 0}, want: []Point{Point{0, 1}, Point{1, 0}}},
+		{name: "LPIPE/RIGHT", p: &Pipe{Type: LPIPE, Direction: RIGHT}, args: args{0, 0}, want: []Point{Point{1, 0}, Point{0, -1}}},
+		{name: "LPIPE/DOWN", p: &Pipe{Type: LPIPE, Direction: DOWN}, args: args{0, 0}, want: []Point{Point{0, -1}, Point{-1, 0}}},
+		{name: "LPIPE/LEFT", p: &Pipe{Type: LPIPE, Direction: LEFT}, args: args{0, 0}, want: []Point{Point{-1, 0}, Point{0, 1}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.p.pointsTo(tt.args.x, tt.args.y); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.p.pointsTo(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Pipe.pointsTo() = %v, want %v", got, tt.want)
 			}
 		})

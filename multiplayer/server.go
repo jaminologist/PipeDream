@@ -13,8 +13,9 @@ import (
 type Server struct {
 	versusLobbyManager *VersusLobbyManager
 
-	singlePlayerRegister chan *player.Player
-	twoPlayerRegister    chan *player.Player
+	singlePlayerRegister  chan *player.Player
+	aiBlitzPlayerRegister chan *player.Player
+	twoPlayerRegister     chan *player.Player
 
 	unregister chan *player.Player
 
@@ -29,6 +30,7 @@ func NewServer() *Server {
 	return &Server{
 		versusLobbyManager:     &versusLobbyManager,
 		singlePlayerRegister:   make(chan *player.Player),
+		aiBlitzPlayerRegister:  make(chan *player.Player),
 		twoPlayerRegister:      make(chan *player.Player),
 		unregister:             make(chan *player.Player),
 		playersLookingForLobby: make([]*player.Player, 0),
@@ -70,6 +72,22 @@ func (s *Server) FindTwoPlayerSession(w http.ResponseWriter, r *http.Request) {
 	log.Println("Created Two Player Versus Session")
 }
 
+func (s *Server) FindAISession(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool {
+		return true
+	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	newPlayer := player.NewPlayer(conn)
+	s.aiBlitzPlayerRegister <- newPlayer
+	log.Println("Created AI Player Session")
+}
+
 //Run starts the Server. The server handles putting players into lobbies and starting their games
 func (s *Server) Run() {
 
@@ -79,6 +97,10 @@ func (s *Server) Run() {
 			var singlePlayerLobby = lobby.NewSinglePlayerLobby()
 			singlePlayerLobby.AddPlayer(newSinglePlayer)
 			go singlePlayerLobby.Run()
+		case newAiBlitzPlayer := <-s.aiBlitzPlayerRegister:
+			var aiPlayerLobby = lobby.NewAIBlitzLobby()
+			aiPlayerLobby.AddPlayer(newAiBlitzPlayer)
+			go aiPlayerLobby.Run()
 		case newVersusPlayer := <-s.twoPlayerRegister:
 			s.versusLobbyManager.registerPlayer(newVersusPlayer)
 		}

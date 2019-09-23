@@ -82,9 +82,13 @@ type DestroyedPipe struct {
 	Y int
 }
 
-type point struct {
-	x int
-	y int
+type Point struct {
+	X int
+	Y int
+}
+
+func newPoint(x int, y int) *Point {
+	return &Point{x, y}
 }
 
 var allTypes = []PipeType{
@@ -182,7 +186,7 @@ func CopyBoard(b *Board) Board {
 
 //RotatePipeClockwise Rotates the pipe at the given x and y clockwise if the board contains the given x and y
 func (b *Board) RotatePipeClockwise(x int, y int) {
-	if b.containsPoint(&point{x, y}) {
+	if b.containsPoint(&Point{x, y}) {
 		b.Cells[x][y].RotateClockWise()
 	}
 }
@@ -224,7 +228,7 @@ func (b *Board) UpdateBoardPipeConnections() []BoardReport {
 
 func (b *Board) findAllClosedPipeTrees() []*pipeTree {
 
-	visitedPoints := make(map[point]bool)
+	visitedPoints := make(map[Point]bool)
 
 	closedTrees := make([]*pipeTree, 0, 0)
 
@@ -232,11 +236,11 @@ func (b *Board) findAllClosedPipeTrees() []*pipeTree {
 
 		for y := 0; y < len(b.Cells[x]); y++ {
 
-			if _, visited := visitedPoints[point{x, y}]; visited {
+			if _, visited := visitedPoints[Point{x, y}]; visited {
 				continue
 			}
 
-			visitedPoints[point{x, y}] = true
+			visitedPoints[Point{x, y}] = true
 			rootPipeTree := newPipeTree(b.Cells[x][y], x, y)
 
 			isClosedTree := traversePipeTreeToCheckForClosedConnection(&rootPipeTree, visitedPoints, b)
@@ -253,13 +257,13 @@ func (b *Board) findAllClosedPipeTrees() []*pipeTree {
 
 				switch {
 				case size < level1Size:
-					pipeTree.Pipe.Level = level0
+					pipeTree.pipe.Level = level0
 				case size < level2Size:
-					pipeTree.Pipe.Level = level1
+					pipeTree.pipe.Level = level1
 				case size < level3Size:
-					pipeTree.Pipe.Level = level2
+					pipeTree.pipe.Level = level2
 				case size >= level3Size:
-					pipeTree.Pipe.Level = level3
+					pipeTree.pipe.Level = level3
 				}
 			}
 		}
@@ -275,9 +279,9 @@ func (b *Board) deletePipeTreesFromBoard(pipeTrees []*pipeTree) []DestroyedPipe 
 
 	for _, rootpipeTree := range pipeTrees {
 		for _, pipeTree := range rootpipeTree.rootAndChildren() {
-			pipe := b.Cells[pipeTree.x][pipeTree.y]
+			pipe := b.Cells[pipeTree.X][pipeTree.Y]
 			if pipe != nil {
-				if destroyedPipe, ok := b.deleteFromBoard(pipeTree.x, pipeTree.y); ok {
+				if destroyedPipe, ok := b.deleteFromBoard(pipeTree.X, pipeTree.Y); ok {
 					destroyedPipes = append(destroyedPipes, destroyedPipe...)
 				}
 			}
@@ -291,7 +295,7 @@ func (b *Board) deleteFromBoard(x int, y int) ([]DestroyedPipe, bool) {
 
 	destroyedPipes := make([]DestroyedPipe, 0, 0)
 
-	if b.containsPoint(&point{x, y}) {
+	if b.containsPoint(&Point{x, y}) {
 
 		if b.Cells[x][y] != nil {
 			pipe := b.Cells[x][y]
@@ -302,13 +306,13 @@ func (b *Board) deleteFromBoard(x int, y int) ([]DestroyedPipe, bool) {
 
 			if pipe.Type == ENDEXPLOSION2 {
 				for _, point := range positionInSquareRange(pipe.X, pipe.Y, 2) {
-					if destroyedPipe, ok := b.deleteFromBoard(point.x, point.y); ok {
+					if destroyedPipe, ok := b.deleteFromBoard(point.X, point.Y); ok {
 						destroyedPipes = append(destroyedPipes, destroyedPipe...)
 					}
 				}
 			} else if pipe.Type == ENDEXPLOSION3 {
 				for _, point := range positionInSquareRange(pipe.X, pipe.Y, 3) {
-					if destroyedPipe, ok := b.deleteFromBoard(point.x, point.y); ok {
+					if destroyedPipe, ok := b.deleteFromBoard(point.X, point.Y); ok {
 						destroyedPipes = append(destroyedPipes, destroyedPipe...)
 					}
 				}
@@ -321,8 +325,8 @@ func (b *Board) deleteFromBoard(x int, y int) ([]DestroyedPipe, bool) {
 	return []DestroyedPipe{}, false
 }
 
-func positionInSquareRange(startX int, startY int, size int) []point {
-	positions := make([]point, 0, 0)
+func positionInSquareRange(startX int, startY int, size int) []Point {
+	positions := make([]Point, 0, 0)
 
 	if size <= 0 {
 		return positions
@@ -335,10 +339,10 @@ func positionInSquareRange(startX int, startY int, size int) []point {
 			}
 
 			positions = append(positions,
-				point{x: startX + x, y: startY + y},
-				point{x: startX + x, y: startY - y},
-				point{x: startX - x, y: startY + y},
-				point{x: startX - x, y: startY - y},
+				Point{X: startX + x, Y: startY + y},
+				Point{X: startX + x, Y: startY - y},
+				Point{X: startX - x, Y: startY + y},
+				Point{X: startX - x, Y: startY - y},
 			)
 		}
 	}
@@ -357,7 +361,7 @@ func (b *Board) addSpecialPipesToBoardUsingClosedTrees(rootPipeTrees []*pipeTree
 		allPipes := rootpipeTree.rootAndChildren()
 		pipeTree := allPipes[rand.Intn(len(allPipes))]
 
-		switch rootpipeTree.Level {
+		switch rootpipeTree.pipe.Level {
 		case level2:
 			newPipe := newPipe(pipeTree.X, pipeTree.Y, ENDEXPLOSION2, getRandomPipeDirection())
 			b.Cells[pipeTree.X][pipeTree.Y] = &newPipe
@@ -445,19 +449,19 @@ func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementA
 	return
 }
 
-func (b *Board) containsPoint(p *point) bool {
-	if p.x < 0 || p.x > len(b.Cells)-1 {
+func (b *Board) containsPoint(p *Point) bool {
+	if p.X < 0 || p.X > len(b.Cells)-1 {
 		return false
-	} else if p.y < 0 || p.y > len(b.Cells[p.x])-1 {
+	} else if p.Y < 0 || p.Y > len(b.Cells[p.X])-1 {
 		return false
 	}
 	return true
 }
 
-func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, visitedPoints map[point]bool, board *Board) bool {
+func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, visitedPoints map[Point]bool, board *Board) bool {
 
 	isClosedTree := true
-	pointsTo := rootPipeTree.pointsTo(rootPipeTree.x, rootPipeTree.y)
+	pointsTo := rootPipeTree.pipe.pointsTo()
 
 	for i := 0; i < len(pointsTo); i++ {
 
@@ -465,19 +469,9 @@ func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, visitedP
 
 		if board.containsPoint(&pointToPoint) {
 
-			childTree := newPipeTree(board.Cells[pointToPoint.x][pointToPoint.y], pointToPoint.x, pointToPoint.y)
-			childPointsTo := childTree.pointsTo(childTree.x, childTree.y)
+			childTree := newPipeTree(board.Cells[pointToPoint.X][pointToPoint.Y], pointToPoint.X, pointToPoint.Y)
 
-			childPointsToParent := false
-
-			for j := 0; j < len(childPointsTo); j++ {
-
-				if childPointsTo[j].x == rootPipeTree.x && childPointsTo[j].y == rootPipeTree.y {
-					childPointsToParent = true
-					break
-				}
-			}
-
+			childPointsToParent := isPipePointingToPipe(childTree.pipe, rootPipeTree.pipe)
 			if childPointsToParent {
 
 				if _, visited := visitedPoints[pointToPoint]; !visited {
@@ -505,15 +499,15 @@ func traversePipeTreeToCheckForClosedConnection(rootPipeTree *pipeTree, visitedP
 type pipeTree struct {
 	parent   *pipeTree
 	Children []*pipeTree
-	*Pipe
+	pipe     *Pipe
 
-	point
+	Point
 }
 
 func newPipeTree(pipe *Pipe, x int, y int) pipeTree {
 	return pipeTree{
-		Pipe:  pipe,
-		point: point{x, y},
+		pipe:  pipe,
+		Point: Point{x, y},
 	}
 }
 
@@ -562,44 +556,58 @@ func (p *Pipe) RotateClockWise() {
 }
 
 //PointsTo Returns which x and y this pipe points to from the give x and y
-func (p *Pipe) pointsTo(x int, y int) []point {
+func (p *Pipe) pointsTo() []Point {
+
+	currentPoint := Point{p.X, p.Y}
 
 	switch p.Type {
 	case END, ENDEXPLOSION2, ENDEXPLOSION3:
-		return []point{pointFromDirection(point{x, y}, p.Direction)}
+		return []Point{pointFromDirection(currentPoint, p.Direction)}
 	case LINE:
 		switch p.Direction {
 		case UP, DOWN:
-			return []point{pointFromDirection(point{x, y}, UP), pointFromDirection(point{x, y}, DOWN)}
+			return []Point{pointFromDirection(currentPoint, UP), pointFromDirection(currentPoint, DOWN)}
 		case LEFT, RIGHT:
-			return []point{pointFromDirection(point{x, y}, LEFT), pointFromDirection(point{x, y}, RIGHT)}
+			return []Point{pointFromDirection(currentPoint, LEFT), pointFromDirection(currentPoint, RIGHT)}
 		}
 	case LPIPE:
 		switch p.Direction {
 		case UP:
-			return []point{pointFromDirection(point{x, y}, UP), pointFromDirection(point{x, y}, RIGHT)}
+			return []Point{pointFromDirection(currentPoint, UP), pointFromDirection(currentPoint, RIGHT)}
 		case RIGHT:
-			return []point{pointFromDirection(point{x, y}, RIGHT), pointFromDirection(point{x, y}, DOWN)}
+			return []Point{pointFromDirection(currentPoint, RIGHT), pointFromDirection(currentPoint, DOWN)}
 		case DOWN:
-			return []point{pointFromDirection(point{x, y}, DOWN), pointFromDirection(point{x, y}, LEFT)}
+			return []Point{pointFromDirection(currentPoint, DOWN), pointFromDirection(currentPoint, LEFT)}
 		case LEFT:
-			return []point{pointFromDirection(point{x, y}, LEFT), pointFromDirection(point{x, y}, UP)}
+			return []Point{pointFromDirection(currentPoint, LEFT), pointFromDirection(currentPoint, UP)}
 
 		}
 	}
-	return []point{}
+	return []Point{}
 }
 
-func pointFromDirection(p point, d PipeDirection) point {
+func (p *Pipe) DoesPipePointTo(x int, y int) bool {
+	points := p.pointsTo()
+
+	for i := 0; i < len(points); i++ {
+		if p.X == points[i].X && p.Y == points[i].Y {
+			return true
+		}
+	}
+
+	return false
+}
+
+func pointFromDirection(p Point, d PipeDirection) Point {
 	switch d {
 	case UP:
-		return point{p.x, p.y + 1}
+		return Point{p.X, p.Y + 1}
 	case RIGHT:
-		return point{p.x + 1, p.y}
+		return Point{p.X + 1, p.Y}
 	case DOWN:
-		return point{p.x, p.y - 1}
+		return Point{p.X, p.Y - 1}
 	case LEFT:
-		return point{p.x - 1, p.y}
+		return Point{p.X - 1, p.Y}
 	}
 	return p
 }
