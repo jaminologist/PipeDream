@@ -35,6 +35,28 @@ func TestBoardSolve(t *testing.T) {
 			&game.Pipe{Type: game.END, Direction: game.DOWN},
 			&game.Pipe{Type: game.END, Direction: game.DOWN}})
 
+	infiniteLoopTestBoard2 := pkg.CreateTestBoard(4, 4,
+		[]*game.Pipe{
+			&game.Pipe{Type: game.LPIPE, Direction: game.RIGHT},
+			&game.Pipe{Type: game.LPIPE, Direction: game.RIGHT},
+			&game.Pipe{Type: game.END, Direction: game.LEFT},
+			&game.Pipe{Type: game.LPIPE, Direction: game.RIGHT}},
+		[]*game.Pipe{
+			&game.Pipe{Type: game.LPIPE, Direction: game.RIGHT},
+			&game.Pipe{Type: game.LINE, Direction: game.UP},
+			&game.Pipe{Type: game.LPIPE, Direction: game.DOWN},
+			&game.Pipe{Type: game.END, Direction: game.UP}},
+		[]*game.Pipe{
+			&game.Pipe{Type: game.LPIPE, Direction: game.RIGHT},
+			&game.Pipe{Type: game.LPIPE, Direction: game.DOWN},
+			&game.Pipe{Type: game.END, Direction: game.DOWN},
+			&game.Pipe{Type: game.LPIPE, Direction: game.RIGHT}},
+		[]*game.Pipe{
+			&game.Pipe{Type: game.LPIPE, Direction: game.UP},
+			&game.Pipe{Type: game.END, Direction: game.RIGHT},
+			&game.Pipe{Type: game.END, Direction: game.DOWN},
+			&game.Pipe{Type: game.LPIPE, Direction: game.DOWN}})
+
 	type args struct {
 		b *game.Board
 	}
@@ -51,9 +73,18 @@ func TestBoardSolve(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "Let's see how to goes2",
-			args:    args{b: &infiniteLoopTestBoard},
-			want:    []*game.Point{&game.Point{0, 0}, &game.Point{0, 0}, &game.Point{0, 1}, &game.Point{0, 1}},
+			name: "L Pipe 3-part loop that points to end piece, but is a child pipe",
+			args: args{b: &infiniteLoopTestBoard},
+			want: []*game.Point{&game.Point{0, 1}, &game.Point{0, 1}, &game.Point{0, 1},
+				&game.Point{1, 1}, &game.Point{1, 1}, &game.Point{1, 1}, &game.Point{0, 2}, &game.Point{0, 2}},
+			wantErr: false,
+		},
+		{
+			name: "L Pipe 3-part loop that points to end piece, but is a root pipe",
+			args: args{b: &infiniteLoopTestBoard2},
+			want: []*game.Point{&game.Point{0, 1}, &game.Point{0, 1}, &game.Point{0, 1},
+				&game.Point{1, 0}, &game.Point{1, 0}, &game.Point{1, 0}, &game.Point{1, 2}, &game.Point{2, 1},
+				&game.Point{2, 1}},
 			wantErr: false,
 		},
 	}

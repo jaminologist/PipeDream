@@ -1,7 +1,5 @@
 package game
 
-import "fmt"
-
 //The purpose of this is to solve the
 
 //Function that accepts a board and returns a array of board inputs to reach a solve
@@ -27,10 +25,10 @@ func findSolution(b *Board) ([]*Point, bool) {
 	for x := 0; x < len(b.Cells); x++ {
 		for y := 0; y < len(b.Cells[x]); y++ {
 
-			pointArray, pathFound := findPathAtPoint(b, x, y)
+			solveBuilder, pathFound := findPathAtPoint(b, x, y)
 
 			if pathFound {
-				return pointArray, true
+				return solveBuilder.pointTapArray, true
 			}
 		}
 	}
@@ -39,7 +37,7 @@ func findSolution(b *Board) ([]*Point, bool) {
 
 }
 
-func findPathAtPoint(b *Board, x int, y int) ([]*Point, bool) {
+func findPathAtPoint(b *Board, x int, y int) (*solveBuilder, bool) {
 
 	//Add current square to visited points
 	currentPoint := *newPoint(x, y)
@@ -50,24 +48,37 @@ func findPathAtPoint(b *Board, x int, y int) ([]*Point, bool) {
 	maxNumberOfRotates := getMaxNumberOfRotations(pipe)
 	for i := 0; i < maxNumberOfRotates; i++ {
 
-		visitedMap := map[Point]bool{}
-		visitedMap[currentPoint] = true
+		visitedMap := map[Point]*Pipe{}
+		visitedMap[currentPoint] = pipe
 
 		pipes, ok := getPipesThatAreBeingPointedTo(pipe, b)
 		if ok {
 			pointsArray := make([]*Point, 0)
 			pathFound := true
 			for _, childPipe := range pipes {
-				points, ok := findPathInChild(visitedMap, b, pipe, childPipe)
 
-				//prepend
-				pointsArray = append(points, pointsArray...)
-				if !ok {
-					pathFound = false
-					break
-				} else {
-					for _, point := range points {
-						visitedMap[*point] = true
+				//check if pipe has been visited
+				if solvedPipe, isVisited := visitedMap[Point{childPipe.X, childPipe.Y}]; !isVisited {
+					childSolveBuilder, ok := findPathInChild(visitedMap, b, pipe, childPipe)
+
+					if !ok {
+						pathFound = false
+						break
+					} else {
+						//prepend
+						pointsArray = append(childSolveBuilder.pointTapArray, pointsArray...)
+						for k, v := range childSolveBuilder.visitedPoints {
+							visitedMap[k] = v
+						}
+						/*for _, point := range childSolveBuilder.pointTapArray {
+							newVisitedMap[*point] = childSolveBuilder.visitedPoints[*point]
+						}*/
+					}
+				} else { //ADD DIRECTION OF VISITED PIPE TO MAP AND USE THAT TO SEE IF THE VISITED POINT IS POINTIUNG TO THE PIPE
+					//fmt.Println("isVisited else is visited:", pipe, ":", childPipe.X, ", ", childPipe.Y)
+					if !isPipePointingToPipe(solvedPipe, pipe) {
+						pathFound = false
+						break
 					}
 				}
 			}
@@ -79,7 +90,10 @@ func findPathAtPoint(b *Board, x int, y int) ([]*Point, bool) {
 					pointsArray = append([]*Point{&Point{X: pipe.X, Y: pipe.Y}}, pointsArray...)
 				}
 
-				return pointsArray, true
+				return &solveBuilder{
+					pointTapArray: pointsArray,
+					visitedPoints: visitedMap,
+				}, true
 			}
 		}
 		pipe.RotateClockWise()
@@ -87,24 +101,22 @@ func findPathAtPoint(b *Board, x int, y int) ([]*Point, bool) {
 	return nil, false
 }
 
-func findPathInChild(originalVistedMap map[Point]bool, b *Board, parentPipe *Pipe, originalPipe *Pipe) ([]*Point, bool) {
+func findPathInChild(originalVistedMap map[Point]*Pipe, b *Board, parentPipe *Pipe, originalPipe *Pipe) (*solveBuilder, bool) {
 
 	pipe := copyPipe(originalPipe)
 	currentPoint := *newPoint(pipe.X, pipe.Y)
 	maxNumberOfRotates := getMaxNumberOfRotations(pipe)
 
-	fmt.Println(pipe.X, ",", pipe.Y)
-
 	for i := 0; i < maxNumberOfRotates; i++ {
 
 		//reset visited points for new pipe rotation
-		newVisitedMap := map[Point]bool{}
+		newVisitedMap := map[Point]*Pipe{}
 
 		for k, v := range originalVistedMap {
 			newVisitedMap[k] = v
 		}
 
-		newVisitedMap[currentPoint] = true
+		newVisitedMap[currentPoint] = pipe
 
 		if isPipePointingToPipe(pipe, parentPipe) && !isPipePointingOutsideOfBoard(pipe, b) {
 
@@ -114,23 +126,26 @@ func findPathInChild(originalVistedMap map[Point]bool, b *Board, parentPipe *Pip
 				for _, childPipe := range pipes {
 
 					//check if pipe has been visited
-					if _, isVisited := newVisitedMap[Point{childPipe.X, childPipe.Y}]; !isVisited {
-						points, ok := findPathInChild(newVisitedMap, b, pipe, childPipe)
+					if solvedPipe, isVisited := newVisitedMap[Point{childPipe.X, childPipe.Y}]; !isVisited {
+						childSolveBuilder, ok := findPathInChild(newVisitedMap, b, pipe, childPipe)
 
 						//prepend
-						pointsArray = append(points, pointsArray...)
+
 						if !ok {
 							pathFound = false
 							break
 						} else {
-							for _, point := range points {
-								newVisitedMap[*point] = true
+							pointsArray = append(childSolveBuilder.pointTapArray, pointsArray...)
+							for k, v := range childSolveBuilder.visitedPoints {
+								newVisitedMap[k] = v
 							}
+							/*for _, point := range childSolveBuilder.pointTapArray {
+								newVisitedMap[*point] = childSolveBuilder.visitedPoints[*point]
+							}*/
 						}
 					} else { //ADD DIRECTION OF VISITED PIPE TO MAP AND USE THAT TO SEE IF THE VISITED POINT IS POINTIUNG TO THE PIPE
-						fmt.Println("isVisited else is visited:", pipe, ":", childPipe.X, ", ", childPipe.Y)
-						if !isPipePointingToPipe(childPipe, pipe) {
-							fmt.Println("isVisited else if thingie is visited")
+						//fmt.Println("isVisited else is visited:", pipe, ":", childPipe.X, ", ", childPipe.Y)
+						if !isPipePointingToPipe(solvedPipe, pipe) {
 							pathFound = false
 							break
 						}
@@ -144,7 +159,10 @@ func findPathInChild(originalVistedMap map[Point]bool, b *Board, parentPipe *Pip
 						pointsArray = append([]*Point{&Point{X: pipe.X, Y: pipe.Y}}, pointsArray...)
 					}
 
-					return pointsArray, true
+					return &solveBuilder{
+						pointTapArray: pointsArray,
+						visitedPoints: newVisitedMap,
+					}, true
 				}
 			}
 		}
