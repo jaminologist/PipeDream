@@ -15,6 +15,11 @@ func BoardSolve(b *Board) ([]*Point, error) {
 	return []*Point{}, nil
 }
 
+type solveBuilder struct {
+	pointTapArray []*Point
+	visitedPoints map[Point]*Pipe
+}
+
 //Function that takes in a Point and returns if there is a solve or not.
 func findSolution(b *Board) ([]*Point, bool) {
 
@@ -121,6 +126,13 @@ func findPathInChild(originalVistedMap map[Point]bool, b *Board, parentPipe *Pip
 							for _, point := range points {
 								newVisitedMap[*point] = true
 							}
+						}
+					} else { //ADD DIRECTION OF VISITED PIPE TO MAP AND USE THAT TO SEE IF THE VISITED POINT IS POINTIUNG TO THE PIPE
+						fmt.Println("isVisited else is visited:", pipe, ":", childPipe.X, ", ", childPipe.Y)
+						if !isPipePointingToPipe(childPipe, pipe) {
+							fmt.Println("isVisited else if thingie is visited")
+							pathFound = false
+							break
 						}
 					}
 				}
