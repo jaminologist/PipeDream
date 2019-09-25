@@ -29,7 +29,7 @@ func _ready():
     
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 # Runs through the animations of each 'BoardReport' if one is availiable
-func _process(delta):
+func _process(_delta):
    
     if boardReports.size() > 0 && !boardAnimationInProgress:
         var boardReport = boardReports[0]
@@ -60,7 +60,7 @@ func set_touchable(isTouchable:bool):
 func load_boardreports_into_grid(boardReports: Array):
     if boardReports.size() <= 0:
         return
-    self.boardReports = boardReports
+    self.boardReports = self.boardReports + boardReports
 
 #Loads the board information and updates the grid GUI to display it
 #Creates a new board if the a board goes not exist
