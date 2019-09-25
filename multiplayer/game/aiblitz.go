@@ -33,6 +33,8 @@ func NewAIBlitzGame(playerOutputChannel chan *message.Message, timeLimit time.Du
 
 	board := NewBoard(7, 7)
 
+	log.Println("New AI GAME CREATED")
+
 	return &AIBlitzGame{
 		timeLimit:            timeLimit,
 		board:                &board,
@@ -87,15 +89,12 @@ OuterLoop:
 		case _ = <-g.aiInputChannel:
 
 			if len(g.moves) <= 0 {
-				//log.Printf("New BoardSolve")
 				g.moves, _ = BoardSolve(g.board)
-				//log.Println(g.moves)
 			}
 			var move *Point
 
 			if len(g.moves) > 0 {
 				move, g.moves = g.moves[0], g.moves[1:]
-				//log.Println("Move:", move)
 				g.board.RotatePipeClockwise(move.X, move.Y)
 			} else {
 				log.Println("No Moves Available.")
@@ -110,10 +109,20 @@ OuterLoop:
 				IsOver:       g.isOver,
 			}
 
+			var pauseTime time.Duration
+
+			for _, boardReport := range boardReports {
+				pauseTime += boardReport.MaximumAnimationTime
+			}
+
 			send.SendMessageToAll(&gameState, g.playerOutputChannel)
 
-			go func() { //To avoid sending too much data to the client this adds a pause before the next AI move.
-				time.Sleep(serverTick / 4)
+			go func() {
+				//Adds a pause to account for the
+				time.Sleep(pauseTime)
+
+				//To avoid sending too much data to the client this adds a pause before the next AI move.
+				time.Sleep(serverTick / 8)
 				g.aiInputChannel <- true
 			}()
 		}
