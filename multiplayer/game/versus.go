@@ -73,7 +73,7 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 	go func() {
 
 		for player, info := range vpbg.playerGameInformation {
-			send.SendMessageToPlayer(&SinglePlayerBlitzGameState{
+			send.SendMessageToPlayer(&BlitzGameState{
 				Board: info.Board,
 				Score: info.Score,
 			}, player, vpbg.sendMessageToPlayerCh)
@@ -141,7 +141,7 @@ OuterLoop:
 
 			info.Score += calculateScoreFromBoardReports(boardReports)
 
-			gameState := SinglePlayerBlitzGameState{
+			gameState := BlitzGameState{
 				BoardReports: boardReports,
 				Score:        info.Score,
 				IsOver:       vpbg.isOver,

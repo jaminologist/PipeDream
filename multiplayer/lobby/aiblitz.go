@@ -52,7 +52,6 @@ func (l *AIBlitzLobby) Run() {
 	go func() {
 		l.game = game.NewAIBlitzGame(l.boardcastAll, SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second)
 		go l.game.Run()
-
 	}()
 
 OuterLoop:
