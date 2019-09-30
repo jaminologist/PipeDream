@@ -1,6 +1,8 @@
 package game
 
-func calculateScoreFromBoardReports(boardReports []BoardReport) int {
+import "bryjamin.com/multiplayer/game/model"
+
+func calculateScoreFromBoardReports(boardReports []model.BoardReport) int {
 
 	pipesDestroyed := 0
 	for i := 0; i < len(boardReports); i++ {

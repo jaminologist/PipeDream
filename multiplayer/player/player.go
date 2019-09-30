@@ -11,6 +11,7 @@ type Player struct {
 
 	PlayerRegister
 	PlayerMessageReceiver
+	PlayerRunner
 }
 
 type PlayerMessage struct {
@@ -22,10 +23,6 @@ type PlayerMessage struct {
 type PlayerBoardInput struct {
 	Player *Player
 	message.BoardInput
-}
-
-//AIPlayer Used to mock a player and fill spaces for waiting players
-type AIPlayer struct {
 }
 
 type Conn interface {
@@ -41,14 +38,29 @@ type PlayerMessageReceiver interface {
 	SendMessage(message *PlayerMessage)
 }
 
-//NewPlayer Returns a new Player containing the given connection
-func NewPlayer(conn Conn) *Player {
-	return &Player{
-		Conn: conn,
-	}
+type PlayerRunner interface {
+	Run()
 }
 
-func (p *Player) Run() {
+//NewPlayer Returns a new Player containing the given connection
+func NewPlayer(conn Conn) *Player {
+
+	player := &Player{
+		Conn: conn,
+	}
+
+	player.PlayerRunner = &ManualPlayerRunner{
+		Player: player,
+	}
+
+	return player
+}
+
+type ManualPlayerRunner struct {
+	*Player
+}
+
+func (p *ManualPlayerRunner) Run() {
 	for {
 		err := p.run()
 		if err != nil {
@@ -57,12 +69,12 @@ func (p *Player) Run() {
 	}
 }
 
-func (p *Player) run() error {
+func (p *ManualPlayerRunner) run() error {
 	messageType, message, err := p.ReadMessage()
 	if err != nil {
 		log.Println("Error Reading Message From Player, Unregistering Player")
 		if p.PlayerRegister != nil {
-			p.UnregisterPlayer(p)
+			p.UnregisterPlayer(p.Player)
 		}
 		return err
 	}
@@ -71,7 +83,7 @@ func (p *Player) run() error {
 		p.SendMessage(&PlayerMessage{
 			MessageType: messageType,
 			Message:     message,
-			Player:      p,
+			Player:      p.Player,
 		})
 	}
 	return nil

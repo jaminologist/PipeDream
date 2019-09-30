@@ -3,6 +3,7 @@ package game
 import (
 	"time"
 
+	"bryjamin.com/multiplayer/game/model"
 	"bryjamin.com/multiplayer/player"
 	"bryjamin.com/multiplayer/send"
 )
@@ -21,7 +22,7 @@ type VersusPlayerBlitzGame struct {
 
 type VersusPlayerBlitzGamePlayerInformation struct {
 	ID       int
-	Board    *Board
+	Board    *model.Board
 	Score    int
 	IsWinner bool
 }
@@ -34,8 +35,8 @@ type VersusPlayerBlitzGamePlayerInformationSentToPlayers struct {
 type VersusPlayerBlitzGameState struct {
 	ID int
 
-	Board        *Board
-	BoardReports []BoardReport
+	Board        *model.Board
+	BoardReports []model.BoardReport
 	Score        int
 	IsOver       bool
 	IsWinner     bool
@@ -47,7 +48,7 @@ func NewVersusPlayerBlitzGame(timeLimit time.Duration, players []*player.Player,
 
 	i := 0
 	for _, player := range players {
-		newBoard := NewBoard(7, 7)
+		newBoard := model.NewBoard(7, 7)
 		newBoard.UpdateBoardPipeConnections() //Note: Need to add a way to generate a board where there are no connections straight away.
 		playerGameInformation[player] = &VersusPlayerBlitzGamePlayerInformation{
 			i,
@@ -73,7 +74,7 @@ func (vpbg *VersusPlayerBlitzGame) Run() {
 	go func() {
 
 		for player, info := range vpbg.playerGameInformation {
-			send.SendMessageToPlayer(&BlitzGameState{
+			send.SendMessageToPlayer(&model.BlitzGameState{
 				Board: info.Board,
 				Score: info.Score,
 			}, player, vpbg.sendMessageToPlayerCh)
@@ -141,7 +142,7 @@ OuterLoop:
 
 			info.Score += calculateScoreFromBoardReports(boardReports)
 
-			gameState := BlitzGameState{
+			gameState := model.BlitzGameState{
 				BoardReports: boardReports,
 				Score:        info.Score,
 				IsOver:       vpbg.isOver,

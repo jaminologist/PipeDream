@@ -1,19 +1,19 @@
-package game_test
+package model_test
 
 import (
 	"testing"
 	"time"
 
-	"bryjamin.com/multiplayer/game"
+	"bryjamin.com/multiplayer/game/model"
 	"bryjamin.com/pkg"
 )
 
 func TestBoard_UpdateBoardPipeConnections3x3(t *testing.T) {
 
 	testBoard := pkg.CreateTestBoard(3, 3,
-		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.DOWN}, &game.Pipe{Type: game.END, Direction: game.UP}, &game.Pipe{Type: game.END, Direction: game.UP}},
-		[]*game.Pipe{&game.Pipe{Type: game.LPIPE, Direction: game.UP}, &game.Pipe{Type: game.LINE, Direction: game.LEFT}, &game.Pipe{Type: game.LPIPE, Direction: game.DOWN}},
-		[]*game.Pipe{&game.Pipe{Type: game.END, Direction: game.DOWN}, &game.Pipe{Type: game.LPIPE, Direction: game.UP}, &game.Pipe{Type: game.END, Direction: game.UP}},
+		[]*model.Pipe{&model.Pipe{Type: model.END, Direction: model.DOWN}, &model.Pipe{Type: model.END, Direction: model.UP}, &model.Pipe{Type: model.END, Direction: model.UP}},
+		[]*model.Pipe{&model.Pipe{Type: model.LPIPE, Direction: model.UP}, &model.Pipe{Type: model.LINE, Direction: model.LEFT}, &model.Pipe{Type: model.LPIPE, Direction: model.DOWN}},
+		[]*model.Pipe{&model.Pipe{Type: model.END, Direction: model.DOWN}, &model.Pipe{Type: model.LPIPE, Direction: model.UP}, &model.Pipe{Type: model.END, Direction: model.UP}},
 	)
 
 	/*
@@ -29,26 +29,26 @@ func TestBoard_UpdateBoardPipeConnections3x3(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		b        *game.Board
-		expected []game.BoardReport
+		b        *model.Board
+		expected []model.BoardReport
 	}{
-		{name: "3x3 Test", b: &testBoard, expected: []game.BoardReport{
+		{name: "3x3 Test", b: &testBoard, expected: []model.BoardReport{
 			{
-				DestroyedPipes: []game.DestroyedPipe{
-					game.DestroyedPipe{Type: game.END, X: 0, Y: 2},
-					game.DestroyedPipe{Type: game.LPIPE, X: 0, Y: 1},
-					game.DestroyedPipe{Type: game.LINE, X: 1, Y: 1},
-					game.DestroyedPipe{Type: game.LPIPE, X: 2, Y: 1},
-					game.DestroyedPipe{Type: game.END, X: 2, Y: 0},
+				DestroyedPipes: []model.DestroyedPipe{
+					model.DestroyedPipe{Type: model.END, X: 0, Y: 2},
+					model.DestroyedPipe{Type: model.LPIPE, X: 0, Y: 1},
+					model.DestroyedPipe{Type: model.LINE, X: 1, Y: 1},
+					model.DestroyedPipe{Type: model.LPIPE, X: 2, Y: 1},
+					model.DestroyedPipe{Type: model.END, X: 2, Y: 0},
 				},
-				PipeMovementAnimations: []game.PipeMovementAnimation{
-					game.PipeMovementAnimation{X: 0, StartY: 2, EndY: 1, TravelTime: time.Millisecond * 100},
-					game.PipeMovementAnimation{X: 1, StartY: 2, EndY: 1, TravelTime: time.Millisecond * 100},
-					game.PipeMovementAnimation{X: 2, StartY: 2, EndY: 0, TravelTime: time.Millisecond * 200},
-					game.PipeMovementAnimation{X: 0, StartY: 3, EndY: 2, TravelTime: time.Millisecond * 100},
-					game.PipeMovementAnimation{X: 1, StartY: 3, EndY: 2, TravelTime: time.Millisecond * 100},
-					game.PipeMovementAnimation{X: 2, StartY: 3, EndY: 1, TravelTime: time.Millisecond * 200},
-					game.PipeMovementAnimation{X: 2, StartY: 4, EndY: 2, TravelTime: time.Millisecond * 200},
+				PipeMovementAnimations: []model.PipeMovementAnimation{
+					model.PipeMovementAnimation{X: 0, StartY: 2, EndY: 1, TravelTime: time.Millisecond * 100},
+					model.PipeMovementAnimation{X: 1, StartY: 2, EndY: 1, TravelTime: time.Millisecond * 100},
+					model.PipeMovementAnimation{X: 2, StartY: 2, EndY: 0, TravelTime: time.Millisecond * 200},
+					model.PipeMovementAnimation{X: 0, StartY: 3, EndY: 2, TravelTime: time.Millisecond * 100},
+					model.PipeMovementAnimation{X: 1, StartY: 3, EndY: 2, TravelTime: time.Millisecond * 100},
+					model.PipeMovementAnimation{X: 2, StartY: 3, EndY: 1, TravelTime: time.Millisecond * 200},
+					model.PipeMovementAnimation{X: 2, StartY: 4, EndY: 2, TravelTime: time.Millisecond * 200},
 				},
 			},
 		}},
@@ -88,7 +88,7 @@ func TestBoard_UpdateBoardPipeConnections3x3(t *testing.T) {
 	}
 }
 
-func containsDestroyedPipe(pipes []game.DestroyedPipe, pipe game.DestroyedPipe) bool {
+func containsDestroyedPipe(pipes []model.DestroyedPipe, pipe model.DestroyedPipe) bool {
 
 	for i := 0; i < len(pipes); i++ {
 		if pipes[i] == pipe {
@@ -98,7 +98,7 @@ func containsDestroyedPipe(pipes []game.DestroyedPipe, pipe game.DestroyedPipe) 
 	return false
 }
 
-func containsPipeMovementAnimation(pipes []game.PipeMovementAnimation, pipe game.PipeMovementAnimation) bool {
+func containsPipeMovementAnimation(pipes []model.PipeMovementAnimation, pipe model.PipeMovementAnimation) bool {
 
 	for i := 0; i < len(pipes); i++ {
 		if pipes[i] == pipe {

@@ -3,6 +3,7 @@ package game
 import (
 	"time"
 
+	"bryjamin.com/multiplayer/game/model"
 	"bryjamin.com/multiplayer/message"
 	"bryjamin.com/multiplayer/send"
 )
@@ -35,18 +36,18 @@ func (cd *timer) countdown() {
 }
 
 type boardInputProcessor struct {
-	board     *Board
+	board     *model.Board
 	score     int
 	messageCh chan *message.Message
 }
 
-func (bip *boardInputProcessor) processBoardInput(x int, y int) BlitzGameState {
+func (bip *boardInputProcessor) processBoardInput(x int, y int) model.BlitzGameState {
 	bip.board.RotatePipeClockwise(x, y)
 	boardReports := bip.board.UpdateBoardPipeConnections()
 
 	bip.score += calculateScoreFromBoardReports(boardReports)
 
-	gameState := BlitzGameState{
+	gameState := model.BlitzGameState{
 		BoardReports: boardReports,
 		Score:        bip.score,
 	}
@@ -56,14 +57,14 @@ func (bip *boardInputProcessor) processBoardInput(x int, y int) BlitzGameState {
 }
 
 func (bip *boardInputProcessor) processGameBegin() {
-	send.SendMessageToAll(&BlitzGameState{
+	send.SendMessageToAll(&model.BlitzGameState{
 		Board: bip.board,
 		Score: bip.score,
 	}, bip.messageCh)
 }
 
 func (bip *boardInputProcessor) processGameOver() {
-	gameState := BlitzGameState{
+	gameState := model.BlitzGameState{
 		Score:  bip.score,
 		IsOver: true,
 	}
@@ -77,17 +78,9 @@ type SinglePlayerBlitzGame struct {
 	playerOutputChannel chan *message.Message
 }
 
-type BlitzGameState struct {
-	Board          *Board
-	BoardReports   []BoardReport
-	Score          int
-	IsOver         bool
-	DestroyedPipes []DestroyedPipe
-}
-
 func NewSinglePlayerBlitzGame(playerOutputChannel chan *message.Message, timeLimit time.Duration) *SinglePlayerBlitzGame {
 
-	board := NewBoard(7, 7)
+	board := model.NewBoard(7, 7)
 
 	return &SinglePlayerBlitzGame{
 		playerInputChannel:  make(chan *message.BoardInput),

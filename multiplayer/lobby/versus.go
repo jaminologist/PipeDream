@@ -2,6 +2,7 @@ package lobby
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -83,6 +84,7 @@ func (lobby *VersusLobby) Run() {
 		player.PlayerMessageReceiver = lobby
 		players[i] = player
 		i++
+		fmt.Println(i)
 	}
 
 	lobby.game = game.NewVersusPlayerBlitzGame(SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second, players, lobby.lobbyToPlayerMessageCh, lobby.playerToLobbyMessageCh)
@@ -120,6 +122,7 @@ OuterLoop:
 			if err != nil {
 				log.Printf("%v", err)
 			}
+			log.Printf("Send message: %v", input)
 			lobby.game.SendPlayerBoardInputToGame(&player.PlayerBoardInput{Player: messageFromPlayer.Player, BoardInput: input})
 		case message := <-lobby.boardcastAll:
 			for player := range lobby.players {

@@ -1,15 +1,15 @@
 package pkg
 
-import "bryjamin.com/multiplayer/game"
+import "bryjamin.com/multiplayer/game/model"
 
 //CreateTestBoard Allows you to create a board in a human readable fashion for easier testing
-func CreateTestBoard(numberOfColumns int, numberOfRows int, rowsTopToBottom ...[]*game.Pipe) game.Board {
-	testBoard := game.Board{
-		Cells: make([][]*game.Pipe, numberOfColumns),
+func CreateTestBoard(numberOfColumns int, numberOfRows int, rowsTopToBottom ...[]*model.Pipe) model.Board {
+	testBoard := model.Board{
+		Cells: make([][]*model.Pipe, numberOfColumns),
 	}
 
 	for i := 0; i < len(testBoard.Cells); i++ {
-		testBoard.Cells[i] = make([]*game.Pipe, numberOfRows)
+		testBoard.Cells[i] = make([]*model.Pipe, numberOfRows)
 	}
 
 	height := numberOfRows - 1

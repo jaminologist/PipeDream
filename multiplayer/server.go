@@ -164,6 +164,10 @@ func (vlm *VersusLobbyManager) Run() {
 			newPlayer.PlayerRegister = vlm
 			go newPlayer.Run()
 			vlm.handleNewPlayer(newPlayer)
+			//newAiPlayer := player.NewAIBlitzPlayer()
+			//newAiPlayer.PlayerRegister = vlm
+			//go newAiPlayer.Run()
+			//vlm.handleNewPlayer(newAiPlayer)
 		case unregisteringPlayer := <-vlm.unregisterPlayerCh:
 			log.Println("Removing Player From Open Lobby...")
 			for _, lobby := range vlm.openVersusLobbies { //S

@@ -4,13 +4,14 @@ import (
 	"errors"
 	"time"
 
+	"bryjamin.com/multiplayer/game/model"
 	"bryjamin.com/multiplayer/message"
 )
 
 type AIBlitzGame struct {
 	*timer
 	*boardInputProcessor
-	moves []*Point
+	moves []*model.Point
 
 	aiInputChannel      chan bool
 	playerOutputChannel chan *message.Message
@@ -18,7 +19,7 @@ type AIBlitzGame struct {
 
 func NewAIBlitzGame(playerOutputChannel chan *message.Message, timeLimit time.Duration) *AIBlitzGame {
 
-	board := NewBoard(7, 7)
+	board := model.NewBoard(7, 7)
 
 	return &AIBlitzGame{
 		playerOutputChannel: playerOutputChannel,
@@ -36,11 +37,11 @@ func NewAIBlitzGame(playerOutputChannel chan *message.Message, timeLimit time.Du
 
 }
 
-func (g *AIBlitzGame) getNextMove() (*Point, error) {
+func (g *AIBlitzGame) getNextMove() (*model.Point, error) {
 	if len(g.moves) <= 0 {
-		g.moves, _ = BoardSolve(g.board)
+		g.moves, _ = model.BoardSolve(g.board)
 	}
-	var move *Point
+	var move *model.Point
 
 	if len(g.moves) <= 0 {
 		return nil, errors.New("No Moves Available")
