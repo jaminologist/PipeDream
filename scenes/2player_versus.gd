@@ -9,6 +9,9 @@ var client_json_reader:ClientJsonReader = load("res://scenes/client_json_reader.
 
 var new_style = load("res://assets/themes/game_over_box_theme.tres")
 
+var grid:Grid
+var container
+
 
 onready var time_display:TimeLabel = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/HBoxContainer/VBoxContainer2/Time_Counter
 onready var player_score_label = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/HBoxContainer/VBoxContainer2/Score_Number_Label
@@ -30,6 +33,8 @@ func _ready():
     $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid/GibletFactory.maxFadeTime = 1.0
     
     victory_container_panel.set('custom_styles/panel', new_style)
+    grid = $Grid
+    container = $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer
     pass 
     
 func _process(delta):
@@ -63,8 +68,8 @@ func poll_client_and_update():
     
     if json != null:
         json as Dictionary
-        client_json_reader.use_json_from_server_for_grid(json, $Grid, rect_size)
-        client_json_reader.use_json_from_server(json, rect_size)
+        client_json_reader.use_json_from_server_for_grid(json, $Grid)
+        client_json_reader.use_json_from_server(json)
         
         if json.get("IsOver", false):
             open_score_screen()
@@ -82,10 +87,9 @@ func poll_client_and_update():
             var enemyJson = json.get("EnemyInformation")
             
             enemyJson as Dictionary
-            var container = $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer
             var rivalGrid = $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid
             
-            client_json_reader.use_json_from_server_for_grid(enemyJson, rivalGrid, container.rect_size)
+            client_json_reader.use_json_from_server_for_grid(enemyJson, rivalGrid)
             if enemyJson.get("Score", null) != null:
                 set_enemy_score(enemyJson.get("Score"))
 
@@ -123,3 +127,20 @@ func _on_connection_error():
 func _on_Grid_pipe_touch(x:int, y:int):
     var inputDictionary = {"x": x, "y": y}
     client.get_peer(1).put_packet(JSON.print(inputDictionary).to_ascii())
+
+
+func _on_Grid_board_loaded_into_grid():
+    var pos:Vector2 = centerMath.center_rectangle_position_offset(rect_size.x, rect_size.y, grid.size.x, grid.size.y)
+    grid.position.x = pos.x
+    grid.position.y = pos.y + (grid.cell_size * 2)
+
+
+func _on_RivalGrid_board_loaded_into_grid():
+    var pos:Vector2 = centerMath.center_rectangle_position_offset(
+    container.rect_size.x, 
+    container.rect_size.y, 
+    grid.size.x, 
+    grid.size.y
+    )
+    grid.position.x = pos.x
+    grid.position.y = pos.y + (grid.cell_size * 2)
