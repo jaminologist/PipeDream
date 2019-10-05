@@ -3,6 +3,7 @@ package player
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"bryjamin.com/multiplayer/game/model"
@@ -48,51 +49,71 @@ func (runner *AIBlitzPlayerRunner) Run() {
 		case message := <-runner.messageFromServerCh:
 			_ = message
 
-			/*var timelimit TimeLimit
-			_ = json.Unmarshal(message, &timelimit)
+			var gameState model.BlitzGameState
+			err := json.Unmarshal(message, &gameState)
 
-			fmt.Println("Up top baby")
-
-			if timelimit.Time != time.Duration(0) {
-				fmt.Println("Returnin' nothing baby")
+			if err != nil {
+				log.Printf("Error: %+v", err)
 				break
-			}*/
+			}
+
+			if gameState.TimeLimit != nil {
+				log.Printf("Sent Time Limit")
+				break
+			}
+
+			var enemyGameState model.VersusPlayerBlitzGamePlayerInformationSentToPlayers
+			err = json.Unmarshal(message, &enemyGameState)
+
+			if err != nil {
+				log.Printf("%+v", err)
+				break
+			}
+
+			if enemyGameState.EnemyInformation != nil {
+				log.Printf("Sent Enemy Information")
+				break
+			}
+
+			for _, report := range gameState.BoardReports {
+				time.Sleep(report.MaximumAnimationTime)
+			}
 
 			if len(runner.moves) > 0 {
-				var move *model.Point
-				move, runner.moves = runner.moves[0], runner.moves[1:]
-
-				bytes, _ := json.Marshal(move)
-
-				runner.player.SendMessage(&PlayerMessage{
-					MessageType: 100,
-					Message:     bytes,
-					Player:      runner.player,
-				})
+				time.Sleep(time.Duration(600) * time.Millisecond / 4)
+				runner.sendNextMoveToLobby()
 			} else {
-				var state model.BlitzGameState
-				err := json.Unmarshal(message, &state)
-
-				if err != nil {
-					break
+				log.Println("Is it ever down here?")
+				if gameState.IsOver {
+					return
 				}
-
-				if len(state.BoardReports) > 0 && len(runner.moves) <= 0 {
-					runner.recentBlitzGameState = &state
+				if len(gameState.BoardReports) > 0 {
+					log.Printf("Sent Board Report Information")
+					runner.recentBlitzGameState = &gameState
 					moves, _ := runner.getNextMoves()
 					runner.moves = moves
-				}
-
-				if state.Board != nil && len(runner.moves) <= 0 {
-					fmt.Println("Sword and board")
-					moves, _ := model.BoardSolve(state.Board)
-					runner.moves = moves
+					runner.sendNextMoveToLobby()
 				}
 			}
 		}
 
 	}
 
+}
+
+func (runner *AIBlitzPlayerRunner) sendNextMoveToLobby() {
+	var move *model.Point
+	move, runner.moves = runner.moves[0], runner.moves[1:]
+
+	bytes, _ := json.Marshal(move)
+
+	runner.player.SendMessage(&PlayerMessage{
+		MessageType: 100,
+		Message:     bytes,
+		Player:      runner.player,
+	})
+
+	time.Sleep(time.Millisecond * 20)
 }
 
 type AIBlitzPlayerConnection struct {
@@ -123,20 +144,4 @@ func (p *AIBlitzPlayerRunner) getNextMoves() ([]*model.Point, error) {
 	}
 
 	return moves, nil
-
-	/*var move *model.Point
-
-	if len(g.moves) <= 0 {
-		return nil, errors.New("No Moves Available")
-	}
-
-	pauseForAnimationTime := time.Duration(0)
-
-	for _, boardReport := range blitzGameState.BoardReports {
-		pauseForAnimationTime += boardReport.MaximumAnimationTime
-	}
-
-	move, g.moves = g.moves[0], g.moves[1:]
-
-	return move, nil*/
 }

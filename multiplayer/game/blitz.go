@@ -23,8 +23,10 @@ func (cd *timer) countdown() {
 	for {
 		cd.timeLimit = cd.timeLimit - serverTick
 
-		send.SendMessageToAll(&TimeLimit{
-			Time: cd.timeLimit,
+		send.SendMessageToAll(&model.BlitzGameState{
+			TimeLimit: &model.TimeLimit{
+				Time: cd.timeLimit,
+			},
 		}, cd.messageCh)
 
 		if cd.timeLimit <= 0 {
@@ -58,7 +60,11 @@ func (bip *boardInputProcessor) processBoardInput(x int, y int) model.BlitzGameS
 
 func (bip *boardInputProcessor) processGameBegin() {
 	send.SendMessageToAll(&model.BlitzGameState{
-		Board: bip.board,
+		BoardReports: []model.BoardReport{
+			model.BoardReport{
+				Board: bip.board,
+			},
+		},
 		Score: bip.score,
 	}, bip.messageCh)
 }
