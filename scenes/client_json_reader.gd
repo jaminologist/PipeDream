@@ -24,10 +24,13 @@ func use_json_from_server(json):
     if json != null:
         json as Dictionary
         
-        if json.get("Time", null) != null:
-            time_label.convert_time_to_label_text_and_set_text(json.get("Time", 0))
-            
-        if json.get("Score", null) != null:
+        var timeLimit = json.get("TimeLimit", null) 
+        if timeLimit != null:
+             if timeLimit.get("Time", null) != null:
+                time_label.convert_time_to_label_text_and_set_text(timeLimit.get("Time", 0))
+        
+        var score = json.get("Score", null)
+        if score != null && score != 0:
             player_score_label.set_score(json.get("Score", 0))
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

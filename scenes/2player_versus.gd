@@ -10,6 +10,7 @@ var client_json_reader:ClientJsonReader = load("res://scenes/client_json_reader.
 var new_style = load("res://assets/themes/game_over_box_theme.tres")
 
 var grid:Grid
+var rivalGrid
 var container
 
 
@@ -35,6 +36,7 @@ func _ready():
     victory_container_panel.set('custom_styles/panel', new_style)
     grid = $Grid
     container = $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer
+    rivalGrid = $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid
     pass 
     
 func _process(delta):
@@ -87,7 +89,6 @@ func poll_client_and_update():
             var enemyJson = json.get("EnemyInformation")
             
             enemyJson as Dictionary
-            var rivalGrid = $VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid
             
             client_json_reader.use_json_from_server_for_grid(enemyJson, rivalGrid)
             if enemyJson.get("Score", null) != null:
@@ -139,8 +140,8 @@ func _on_RivalGrid_board_loaded_into_grid():
     var pos:Vector2 = centerMath.center_rectangle_position_offset(
     container.rect_size.x, 
     container.rect_size.y, 
-    grid.size.x, 
-    grid.size.y
+    rivalGrid.size.x, 
+    rivalGrid.size.y
     )
-    grid.position.x = pos.x
-    grid.position.y = pos.y + (grid.cell_size * 2)
+    rivalGrid.position.x = pos.x
+    rivalGrid.position.y = pos.y + (rivalGrid.cell_size * 2)
