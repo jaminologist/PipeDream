@@ -10,7 +10,7 @@ func _ready():
     $TwoPlayerVersus.set_process(false)
     $TwoPlayerVersus/Grid.set_process(false)
     
-    client.connect_to_url(Connections.VERSUS_PLAYER_WEBSOCKET_STRING)
+    client.connect_to_url(Connections.EDITABLE_PLAYER_WEBSOCKET_STRING)
     client.connect("connection_failed", self, "_on_connection_error")
     client.connect("connection_established", self, "_on_connection_established")
 
