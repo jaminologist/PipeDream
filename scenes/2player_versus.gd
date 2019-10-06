@@ -75,7 +75,6 @@ func poll_client_and_update():
         client_json_reader.use_json_from_server(response)
         
         if response.isOver():
-            open_score_screen()
             
             if json.get("IsWinner", false):
                 new_style.border_color = Color.green
@@ -84,6 +83,8 @@ func poll_client_and_update():
             else:
                 new_style.border_color = Color.red
                 victory_container_title_label.text = "You Lose..."
+            
+            open_score_screen()
                 
             
         if json.get("EnemyInformation", null) != null:
