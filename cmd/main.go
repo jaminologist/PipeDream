@@ -15,6 +15,6 @@ func main() {
 	http.HandleFunc("/singlePlayerBlitzGame", server.CreateSinglePlayerSession)
 	http.HandleFunc("/versusBlitzGame", server.FindTwoPlayerSession)
 	http.HandleFunc("/aiBlitzGame", server.FindAISession)
-
+	http.HandleFunc("/versusAiBlitzGame", server.FindVersusAISession)
 	log.Fatal(http.ListenAndServe(":5080", nil))
 }

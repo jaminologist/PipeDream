@@ -1,4 +1,4 @@
-package game
+package model
 
 //The purpose of this is to solve the
 
