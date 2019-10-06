@@ -11,7 +11,10 @@ var client_json_reader:ClientJsonReader = load("res://scenes/client_json_reader.
 onready var time_display:TimeLabel = $VBoxContainer/VBoxScoreTimeContainer/VBoxTimeContainer/Time_Counter
 onready var score_label:ScoreLabel = $VBoxContainer/VBoxScoreTimeContainer/VBoxScoreContainer/Score_Number_Label
 
+var grid:Grid
+
 func _ready():
+    self.grid = $Grid
     setup()
     
 func setup():
@@ -25,7 +28,7 @@ func setup_client_json_reader():
     client_json_reader.grid = $Grid
     client_json_reader.player_score_label = score_label
     
-func _process(delta):
+func _process(_delta):
     poll_client_and_update()
     if Input.is_action_just_pressed("ui_cancel"):
         get_tree().change_scene("res://scenes/main_menu.tscn")
@@ -44,8 +47,8 @@ func poll_client_and_update():
     
     if json != null:
         json as Dictionary
-        client_json_reader.use_json_from_server_for_grid(json, $Grid, rect_size)
-        client_json_reader.use_json_from_server(json, rect_size)
+        client_json_reader.use_json_from_server_for_grid(json, $Grid)
+        client_json_reader.use_json_from_server(json)
         if json.get("IsOver", false):
             open_score_screen()
         
@@ -91,3 +94,9 @@ func _on_Grid_pipe_touch(x:int, y:int):
     var start = OS.get_ticks_usec()
     client.get_peer(1).put_packet(JSON.print(inputDictionary).to_ascii())
     var elapsed = OS.get_ticks_usec() - start
+
+
+func _on_Grid_board_loaded_into_grid():
+    var pos:Vector2 = centerMath.center_rectangle_position_offset(rect_size.x, rect_size.y, grid.size.x, grid.size.y)
+    grid.position.x = pos.x
+    grid.position.y = pos.y + (grid.cell_size * 2)

@@ -209,7 +209,9 @@ shortcut_in_tooltip = false
 text = "Main Menu"
 
 [node name="CameraShake2D" parent="." instance=ExtResource( 7 )]
+[connection signal="board_loaded_into_grid" from="Grid" to="." method="_on_Grid_board_loaded_into_grid"]
 [connection signal="explosive_pipe_destroyed" from="Grid" to="." method="_on_Grid_explosive_pipe_destroyed"]
 [connection signal="pipe_touch" from="Grid" to="." method="_on_Grid_pipe_touch"]
+[connection signal="board_loaded_into_grid" from="VBoxContainer/VBoxScoreTimeContainer/VRivalGridContainer/RivalGrid" to="." method="_on_RivalGrid_board_loaded_into_grid"]
 [connection signal="pressed" from="VictoryCenterContainer/PanelContainer/VBoxContainer/RetryButton" to="." method="_on_RetryButton_pressed"]
 [connection signal="pressed" from="VictoryCenterContainer/PanelContainer/VBoxContainer/MainMenuButton" to="." method="_on_MainMenuButton_pressed"]

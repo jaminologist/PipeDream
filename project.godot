@@ -10,6 +10,11 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "Node",
+"class": "BlitzGameResponse",
+"language": "GDScript",
+"path": "res://model/blitz_game_response.gd"
+}, {
+"base": "Node",
 "class": "CenterMath",
 "language": "GDScript",
 "path": "res://math/center_math.gd"
@@ -40,6 +45,7 @@ _global_script_classes=[ {
 "path": "res://scenes/time_counter.gd"
 } ]
 _global_script_class_icons={
+"BlitzGameResponse": "",
 "CenterMath": "",
 "ClientJsonReader": "",
 "Grid": "",

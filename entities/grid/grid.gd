@@ -10,6 +10,8 @@ export (int) var pipe_fall_speed
 signal pipe_touch
 signal pipes_destroyed(number)
 signal explosive_pipe_destroyed(power, time)
+signal board_loaded_into_grid()
+
 
 var pipe_preload = preload("res://entities/pipes/pipe.tscn")
 var board
@@ -83,6 +85,10 @@ func load_board_into_grid(board:Dictionary):
                 pipe.position = grid_to_pixel(x, y)
                 pipe.set_size(cell_size,cell_size)
                 self.board[x][y] = pipe
+        
+        emit_signal("board_loaded_into_grid")
+                
+        
                     
     for x in range(0, cells.size()):
         for y in range(0, cells[x].size()):

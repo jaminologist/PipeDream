@@ -10,6 +10,7 @@ func setup():
     client.connect("connection_failed", self, "_on_connection_error")  
     setup_client_json_reader()
     $Grid.set_touchable(false)
+    grid = $Grid
     
 func _on_Grid_pipe_touch(x:int, y:int):
     pass

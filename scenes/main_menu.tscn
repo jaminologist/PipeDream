@@ -38,14 +38,14 @@ align = 1
 [node name="MarginContainer" type="MarginContainer" parent="MenuGroup"]
 margin_top = 45.0
 margin_right = 440.0
-margin_bottom = 386.0
+margin_bottom = 443.0
 custom_constants/margin_top = 90
 custom_constants/margin_bottom = 90
 
 [node name="ButtonGroup" type="VBoxContainer" parent="MenuGroup/MarginContainer"]
 margin_top = 90.0
 margin_right = 440.0
-margin_bottom = 251.0
+margin_bottom = 308.0
 custom_constants/separation = 10
 
 [node name="BlitzButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
@@ -57,25 +57,36 @@ custom_fonts/font = SubResource( 1 )
 text = "Blitz"
 flat = true
 
+[node name="AIBlitzButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
+margin_left = 166.0
+margin_top = 57.0
+margin_right = 274.0
+margin_bottom = 104.0
+size_flags_horizontal = 4
+custom_fonts/font = SubResource( 1 )
+text = "AI Blitz"
+flat = true
+
 [node name="VersusButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
 margin_left = 133.0
-margin_top = 57.0
+margin_top = 114.0
 margin_right = 306.0
-margin_bottom = 104.0
+margin_bottom = 161.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 1 )
 text = "Versus Blitz"
 flat = true
 
-[node name="AIBlitzButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
-margin_left = 166.0
-margin_top = 114.0
-margin_right = 274.0
-margin_bottom = 161.0
+[node name="VersusAIBlitzButton2" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
+margin_left = 116.0
+margin_top = 171.0
+margin_right = 324.0
+margin_bottom = 218.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 1 )
-text = "AI Blitz"
+text = "Versus AI Blitz"
 flat = true
 [connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/BlitzButton" to="." method="_on_BlitzButton_pressed"]
-[connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/VersusButton" to="." method="_on_VersusButton_pressed"]
 [connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/AIBlitzButton" to="." method="_on_AIBlitzButton_pressed"]
+[connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/VersusButton" to="." method="_on_VersusButton_pressed"]
+[connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/VersusAIBlitzButton2" to="." method="_on_VersusAIBlitzButton_pressed"]
