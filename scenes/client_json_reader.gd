@@ -1,5 +1,4 @@
-extends Node
-
+extends Object
 class_name ClientJsonReader
 
 var grid:Grid
@@ -10,28 +9,20 @@ var player_score_label:ScoreLabel
 func _ready():
     pass 
     
-func use_json_from_server_for_grid(json:Dictionary,grid:Grid):
-    if json != null:
-        if json.get("BoardReports", null) != null:
-            var firstload = grid.board == null
-            var boardReports = json.get("BoardReports", null) 
-            if boardReports.size() > 0:
-                grid.load_boardreports_into_grid(boardReports)
+func use_json_from_server_for_grid(response:BlitzGameResponse, grid:Grid):
+    var boardReports = response.get_board_reports()
+    if boardReports != null && boardReports.size() > 0:
+        grid.load_boardreports_into_grid(boardReports)
         
     
-func use_json_from_server(json):
+func use_json_from_server(response:BlitzGameResponse):
     
-    if json != null:
-        json as Dictionary
+    if response.get_time_limit() != null:
+        time_label.convert_time_to_label_text_and_set_text(response.get_time_limit().Time)
         
-        var timeLimit = json.get("TimeLimit", null) 
-        if timeLimit != null:
-             if timeLimit.get("Time", null) != null:
-                time_label.convert_time_to_label_text_and_set_text(timeLimit.get("Time", 0))
-        
-        var score = json.get("Score", null)
-        if score != null && score != 0:
-            player_score_label.set_score(json.get("Score", 0))
+    var score = response.get_score()
+    if score != null && score != 0:
+        player_score_label.set_score(score)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

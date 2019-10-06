@@ -5,6 +5,8 @@ var time_limit = 0
 
 var client = WebSocketClient.new()
 
+var response:BlitzGameResponse
+
 var centerMath:CenterMath = load("res://math/center_math.gd").new()
 var client_json_reader:ClientJsonReader = load("res://scenes/client_json_reader.gd").new()
 
@@ -47,9 +49,12 @@ func poll_client_and_update():
     
     if json != null:
         json as Dictionary
-        client_json_reader.use_json_from_server_for_grid(json, $Grid)
-        client_json_reader.use_json_from_server(json)
-        if json.get("IsOver", false):
+        response = BlitzGameResponse.new(json)
+            
+        client_json_reader.use_json_from_server_for_grid(response, $Grid)
+        client_json_reader.use_json_from_server(response)
+        
+        if response.isOver():
             open_score_screen()
         
 
