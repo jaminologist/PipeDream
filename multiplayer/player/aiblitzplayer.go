@@ -58,7 +58,6 @@ func (runner *AIBlitzPlayerRunner) Run() {
 			}
 
 			if gameState.TimeLimit != nil {
-				log.Printf("Sent Time Limit")
 				break
 			}
 
@@ -71,7 +70,6 @@ func (runner *AIBlitzPlayerRunner) Run() {
 			}
 
 			if enemyGameState.EnemyInformation != nil {
-				log.Printf("Sent Enemy Information")
 				break
 			}
 
@@ -80,15 +78,12 @@ func (runner *AIBlitzPlayerRunner) Run() {
 			}
 
 			if len(runner.moves) > 0 {
-				time.Sleep(time.Duration(600) * time.Millisecond / 4)
 				runner.sendNextMoveToLobby()
 			} else {
-				log.Println("Is it ever down here?")
 				if gameState.IsOver {
 					return
 				}
 				if len(gameState.BoardReports) > 0 {
-					log.Printf("Sent Board Report Information")
 					runner.recentBlitzGameState = &gameState
 					moves, _ := runner.getNextMoves()
 					runner.moves = moves
@@ -113,7 +108,7 @@ func (runner *AIBlitzPlayerRunner) sendNextMoveToLobby() {
 		Player:      runner.player,
 	})
 
-	time.Sleep(time.Millisecond * 20)
+	time.Sleep((time.Duration(600) * time.Millisecond) / 3)
 }
 
 type AIBlitzPlayerConnection struct {

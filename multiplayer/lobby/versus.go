@@ -122,7 +122,6 @@ OuterLoop:
 			if err != nil {
 				log.Printf("%v", err)
 			}
-			log.Printf("Send message: %v", input)
 			lobby.game.SendPlayerBoardInputToGame(&player.PlayerBoardInput{Player: messageFromPlayer.Player, BoardInput: input})
 		case message := <-lobby.boardcastAll:
 			for player := range lobby.players {
