@@ -9,7 +9,7 @@
 config_version=4
 
 _global_script_classes=[ {
-"base": "Node",
+"base": "Object",
 "class": "BlitzGameResponse",
 "language": "GDScript",
 "path": "res://model/blitz_game_response.gd"
@@ -19,7 +19,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://math/center_math.gd"
 }, {
-"base": "Node",
+"base": "Object",
 "class": "ClientJsonReader",
 "language": "GDScript",
 "path": "res://scenes/client_json_reader.gd"

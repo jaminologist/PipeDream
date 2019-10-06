@@ -70,10 +70,11 @@ func poll_client_and_update():
     
     if json != null:
         json as Dictionary
-        client_json_reader.use_json_from_server_for_grid(json, $Grid)
-        client_json_reader.use_json_from_server(json)
+        var response = BlitzGameResponse.new(json)
+        client_json_reader.use_json_from_server_for_grid(response, $Grid)
+        client_json_reader.use_json_from_server(response)
         
-        if json.get("IsOver", false):
+        if response.isOver():
             open_score_screen()
             
             if json.get("IsWinner", false):
@@ -89,10 +90,10 @@ func poll_client_and_update():
             var enemyJson = json.get("EnemyInformation")
             
             enemyJson as Dictionary
-            
-            client_json_reader.use_json_from_server_for_grid(enemyJson, rivalGrid)
-            if enemyJson.get("Score", null) != null:
-                set_enemy_score(enemyJson.get("Score"))
+            var enemyResponse = BlitzGameResponse.new(enemyJson)
+            client_json_reader.use_json_from_server_for_grid(enemyResponse, rivalGrid)
+            if enemyResponse.get_score() != 0:
+                set_enemy_score(enemyResponse.get_score())
 
 func update_time_counter_text(time_limit):
     time_display.convert_time_to_label_text_and_set_text(time_limit)
