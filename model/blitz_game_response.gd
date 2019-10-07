@@ -23,7 +23,7 @@ func get_time_limit() -> TimeLimit:
     if timeLimit == null:
         return null
     else:
-        return TimeLimit.new(timeLimit.get("Time", 0))
+        return TimeLimit.new(timeLimit.get("Time"))
         
 func isOver() -> bool:
     return json.get("IsOver", false)
@@ -110,7 +110,7 @@ class PipeMovementAnimation:
         
 class TimeLimit:
     var Time:float
-    func _init(time:int):
+    func _init(time:float):
         self.Time = time
           
     
