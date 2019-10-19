@@ -1,37 +1,38 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
-
-	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {
 
-	mux := http.NewServeMux()
+	/*mux := http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir("./static")))
 
-	mgr := autocert.Manager{
+	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist("wthpd.com"),
-		Cache:      autocert.DirCache("cert-cache"),
+		Cache:      autocert.DirCache("/certs"),
+		HostPolicy: autocert.HostWhitelist("www.wthpd.com"),
 	}
-
-	http.Handle("/", http.FileServer(http.Dir("./static")))
-	fmt.Println("Listening on 80...")
-
 	server := &http.Server{
 		Addr:    ":443",
 		Handler: mux,
 		TLSConfig: &tls.Config{
 			GetCertificate: certManager.GetCertificate,
 		},
-	}
+	}*/
 
-	go log.Fatal(http.ListenAndServe(":80", mgr.HTTPHandler(nil)))
+	fmt.Println("Listening on 17000...")
 
-	server.ListenAndServeTLS("", "")
+	//go func() {
+
+	http.Handle("/", http.FileServer(http.Dir("./static")))
+	log.Fatal(http.ListenAndServe(":17000", nil))
+	//}()
+
+	//fmt.Println("Hold up?")
+
+	//server.ListenAndServeTLS("", "")
 }

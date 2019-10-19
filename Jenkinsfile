@@ -62,9 +62,9 @@ pipeline {
                 }
             }
         }
-        stage("Run PipeDream Website Image at port 80"){
+        stage("Run PipeDream Website Image at port 17000"){
             steps{
-                sh "docker run -p 80:80 -d --name pipedream-website pipedream-website"
+                 sh "docker run -p 17000:17000 -d --name pipedream-website pipedream-website"
             }
         }
     }
