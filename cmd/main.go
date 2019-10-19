@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,7 +11,9 @@ import (
 
 func main() {
 
-	//var httpsSrv *http.Server
+	mux := http.NewServeMux()
+	mux.Handle("/", http.FileServer(http.Dir("./static")))
+
 	mgr := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist("wthpd.com"),
@@ -19,5 +22,16 @@ func main() {
 
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	fmt.Println("Listening on 80...")
-	log.Fatal(http.ListenAndServe(":80", mgr.HTTPHandler(nil)))
+
+	server := &http.Server{
+		Addr:    ":443",
+		Handler: mux,
+		TLSConfig: &tls.Config{
+			GetCertificate: certManager.GetCertificate,
+		},
+	}
+
+	go log.Fatal(http.ListenAndServe(":80", mgr.HTTPHandler(nil)))
+
+	server.ListenAndServeTLS("", "")
 }
