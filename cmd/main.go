@@ -13,8 +13,8 @@ func main() {
 	//var httpsSrv *http.Server
 	mgr := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist("www.wthpd.com"),
-		Cache:      autocert.DirCache("certs"),
+		HostPolicy: autocert.HostWhitelist("wthpd.com"),
+		Cache:      autocert.DirCache("cert-cache"),
 	}
 
 	http.Handle("/", http.FileServer(http.Dir("./static")))
