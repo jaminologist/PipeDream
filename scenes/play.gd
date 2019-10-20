@@ -90,6 +90,7 @@ func _on_Grid_explosive_pipe_destroyed(power, time):
     $CameraShake2D.start_camera_shake(power, 0.25)
     
 func _on_connection_error():
+    print("Connection error")
     get_tree().change_scene("res://scenes/main_menu.tscn")
     pass
 
