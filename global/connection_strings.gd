@@ -1,6 +1,6 @@
 extends Node
 
-var WEBSOCKET_HEADER = "ws://wthpd.com"
+var WEBSOCKET_HEADER = "ws://server.wthpd.com"
 #var WEBSOCKET_HEADER = "ws://subdomain.example.com"
 var SINGLE_PLAYER_WEBSOCKET_STRING = WEBSOCKET_HEADER + "/singlePlayerBlitzGame"
 var VERSUS_PLAYER_WEBSOCKET_STRING = WEBSOCKET_HEADER + "/versusBlitzGame"
