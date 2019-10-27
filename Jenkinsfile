@@ -14,8 +14,8 @@ pipeline {
         }
         stage("Run Image"){
             steps{
-               //sh "docker run -p 5080:5080 -p 80:80 -p 443:443 -e ENVIRONMENT=-env=production -d --name pipedream-test pipedream-test"
-               sh "docker run -p 5080:5080  -d --name pipedream-test pipedream-test"
+               sh "docker run -p 5080:5080 -e ENVIRONMENT=-env=production -d --name pipedream-test pipedream-test"
+               //sh "docker run -p 5080:5080  -d --name pipedream-test pipedream-test"
             }
         }
     }
