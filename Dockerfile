@@ -6,9 +6,7 @@ WORKDIR /pipedream-website
 COPY go.mod .
 COPY go.sum .
 
-RUN git version
 RUN go mod download
-
 
 COPY cmd cmd
 COPY static static

@@ -1,0 +1,52 @@
+name: Deploy Website Service With HTML5 Game
+
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+        
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v2
+      with: 
+        repository: Bryjamin/PipeDream-Godot-Client
+        token: ${{ secrets.GITHUB_PAT }}
+        path: client
+    - name: Remove Godot Client Image, if exists
+      run:  "docker rm -f pipedream-godot-client || true"
+    - name: Build PipeDream Godot Client in client folder
+      run: "docker build -t pipedream-godot-client ."
+      working-directory: ./client
+    - name: Create temporary export container
+      run: "docker create --name temporary-export-container pipedream-godot-client"
+      working-directory: ./client
+    - name: Export HTML5 Game from temporary container
+      run: "docker cp temporary-export-container:/pipedream-godot-client/exports ."
+      working-directory: ./client
+    - name: Removed temporary container
+      run: "docker rm temporary-export-container"
+    - uses: actions/checkout@v2
+      with: 
+        path: website
+    - name: List Directory
+      run: "ls -l"
+    - name: Remove all contents from static Directory
+      run: "rm ./static/*"
+      working-directory: ./website
+    - name: Copy contents of export directory into static directory
+      run: "cp -a ./client/exports/. ./website/static"
+    - name: Remove PipeDream Website Image, if exists
+      run: "docker rm -f pipedream-website || true"
+    - name: Build PipeDream Website Image
+      run: "docker build -t pipedream-website ."
+      working-directory: ./website
+    - name: Run PipeDream Website Image at port 17000
+      run: "docker run -p 17000:17000 -d --name pipedream-website pipedream-website"
+      working-directory: ./website
