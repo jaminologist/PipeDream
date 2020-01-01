@@ -1,0 +1,22 @@
+name: CI
+
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Send deploy event to PipeDream Website
+      run: |
+         curl --request POST \
+         --url https://api.github.com/repos/Bryjamin/PipeDream-Website-Service/dispatches \
+         --header 'accept: application/vnd.github.everest-preview+json' \
+         --header 'authorization: token ${{ secrets.GITHUB_PAT }}' \
+         --data '{"event_type": "deploy"}'
