@@ -1,4 +1,4 @@
-name: CI
+name: Notify PipeDream Website Service
 
 on: 
   push:

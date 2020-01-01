@@ -36,6 +36,10 @@ func _process(_delta):
         get_tree().change_scene("res://scenes/main_menu.tscn")
         
         
+func _notification(notif):    
+    if notif == MainLoop.NOTIFICATION_WM_GO_BACK_REQUEST: 
+        get_tree().change_scene("res://scenes/main_menu.tscn")
+        
 func poll_client_and_update():
     
     

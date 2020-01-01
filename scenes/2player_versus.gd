@@ -143,7 +143,7 @@ func _on_RivalGrid_board_loaded_into_grid():
     container.rect_size.x, 
     container.rect_size.y, 
     rivalGrid.size.x, 
-    rivalGrid.size.y
-    )
+    rivalGrid.size.y)
+    
     rivalGrid.position.x = pos.x
-    rivalGrid.position.y = pos.y + (rivalGrid.cell_size * 2)
+    rivalGrid.position.y = pos.y

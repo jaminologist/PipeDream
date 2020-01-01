@@ -26,7 +26,9 @@ position = Vector2( 25, 300 )
 cell_size = 52.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
+editor/display_folded = true
 anchor_right = 1.0
+margin_top = 25.0
 margin_bottom = 131.0
 
 [node name="TitleContainer" type="VBoxContainer" parent="VBoxContainer"]
