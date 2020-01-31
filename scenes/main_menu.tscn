@@ -23,10 +23,10 @@ color = Color( 0, 0, 0, 1 )
 [node name="MenuGroup" type="VBoxContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 20.0
-margin_top = 60.0
-margin_right = -20.0
-margin_bottom = -60.0
+margin_left = 21.0527
+margin_top = 61.0526
+margin_right = -18.9473
+margin_bottom = -58.9474
 
 [node name="Title" type="Label" parent="MenuGroup"]
 margin_right = 440.0
@@ -54,6 +54,7 @@ margin_right = 256.0
 margin_bottom = 47.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 1 )
+custom_colors/font_color_hover = Color( 0.317647, 0.317647, 0.317647, 1 )
 text = "Blitz"
 flat = true
 
@@ -64,16 +65,17 @@ margin_right = 274.0
 margin_bottom = 104.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 1 )
+custom_colors/font_color_hover = Color( 0.317647, 0.317647, 0.317647, 1 )
 text = "AI Blitz"
 flat = true
 
 [node name="VersusButton" type="Button" parent="MenuGroup/MarginContainer/ButtonGroup"]
-margin_left = 133.0
 margin_top = 114.0
-margin_right = 306.0
+margin_right = 440.0
 margin_bottom = 161.0
-size_flags_horizontal = 4
+size_flags_horizontal = 5
 custom_fonts/font = SubResource( 1 )
+custom_colors/font_color_hover = Color( 0.317647, 0.317647, 0.317647, 1 )
 text = "Versus Blitz"
 flat = true
 
@@ -84,6 +86,7 @@ margin_right = 324.0
 margin_bottom = 218.0
 size_flags_horizontal = 4
 custom_fonts/font = SubResource( 1 )
+custom_colors/font_color_hover = Color( 0.317647, 0.317647, 0.317647, 1 )
 text = "Versus AI Blitz"
 flat = true
 [connection signal="pressed" from="MenuGroup/MarginContainer/ButtonGroup/BlitzButton" to="." method="_on_BlitzButton_pressed"]
