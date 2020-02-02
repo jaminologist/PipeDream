@@ -77,8 +77,9 @@ OuterLoop:
 			err := json.Unmarshal(inboundPlayerMessage.Message, &input)
 			if err == nil {
 				l.game.SendBoardInput(&input)
+			} else {
+				log.Printf("%v", err)
 			}
-			log.Printf("%v", err)
 		case message := <-l.outboundMessageCh:
 			if err := l.player.WriteMessage(message.MessageType, message.Message); err != nil {
 				log.Println(err)
