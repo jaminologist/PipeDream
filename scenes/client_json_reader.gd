@@ -9,13 +9,13 @@ var player_score_label:ScoreLabel
 func _ready():
     pass 
     
-func use_json_from_server_for_grid(response:BlitzGameResponse, grid:Grid):
+func set_board_reports(response:BlitzGameResponse, grid:Grid):
     var boardReports = response.get_board_reports()
     if boardReports != null && boardReports.size() > 0:
         grid.load_boardreports_into_grid(boardReports)
         
     
-func use_json_from_server(response:BlitzGameResponse):
+func set_time_limit_and_score(response:BlitzGameResponse):
     
     if response.get_time_limit() != null:
         time_label.convert_time_to_label_text_and_set_text(response.get_time_limit().Time)

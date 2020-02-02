@@ -34,11 +34,13 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 # Runs through the animations of each 'BoardReport' if one is availiable
 func _process(_delta):
-   
-    if boardReports.size() > 0 && !boardAnimationInProgress:
-        
+    if boardReports.size() > 0 && boardAnimationInProgress == false:
         if currentBoardReport == null:
             currentBoardReport = BlitzGameResponse.BoardReport.new(boardReports[0])
+            if currentBoardReport.is_new_board():
+                self.reset() 
+                load_board_into_grid(currentBoardReport.get_board())
+                return
         
         if currentBoardReport.get_destroyed_pipes().empty() && currentBoardReport.get_pipe_movement_animations().empty():
             load_board_into_grid(currentBoardReport.get_board())
@@ -62,6 +64,14 @@ func _process(_delta):
     
 func set_touchable(isTouchable:bool):
     self.isTouchable = isTouchable
+
+func reset():
+    
+    for x in column:
+        for y in row:
+            self.board[x][y].queue_free()
+    
+    self.board = null
 
 #Load the board report information
 func load_boardreports_into_grid(boardReports: Array):
@@ -98,11 +108,16 @@ func load_board_into_grid(loadedBoard):
                     
     for x in range(0, cells.size()):
         for y in range(0, cells[x].size()):
-            var cell = BlitzGameResponse.ResponsePipe.new(cells[x][y])
-            var pipe = self.board[x][y]
-            pipe.set_texture_using_type(cell.type)
-            pipe.set_direction(cell.direction)
-            pipe.set_pipeColor(cell.level)
+            if cells[x][y] != null:
+                var cell = BlitzGameResponse.ResponsePipe.new(cells[x][y])
+                var pipe = self.board[x][y]
+                pipe.set_texture_using_type(cell.type)
+                pipe.set_direction(cell.direction)
+                pipe.set_pipeColor(cell.level)
+            else:
+                var pipe = self.board[x][y]
+                pipe.set_pipeColor(4)
+                 
 
 #Loads the destroyed pipes information. Displays an 'explosion' at the given x and y positions on the grid.
 #Sends an explosive signal for different pipe types
@@ -198,7 +213,6 @@ func on_mouse_click():
         
         if board != null:
             if contains(gridX, gridY, board):   
-                self.board[gridX][gridY].rotate_pipe()
                 emit_signal("pipe_touch", gridX, gridY)
 
 func get_new_pipe_instance(pipeType: int):

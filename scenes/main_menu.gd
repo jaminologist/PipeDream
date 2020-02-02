@@ -17,3 +17,7 @@ func _on_AIBlitzButton_pressed():
 func _on_VersusAIBlitzButton_pressed():
     Connections.EDITABLE_PLAYER_WEBSOCKET_STRING = Connections.VERSUS_AI_WEBSOCKET_STRING
     get_tree().change_scene("res://scenes/2player_versus_container.tscn")
+
+
+func _on_Tutorial_pressed():
+    get_tree().change_scene("res://scenes/tutorial.tscn")

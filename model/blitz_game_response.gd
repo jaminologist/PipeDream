@@ -33,6 +33,7 @@ class BoardReport:
     var DestroyedPipes:Array = []
     var PipeMovementAnimations: Array = []
     var MaximumAnimationTime: float
+    var IsNewBoard: bool
     var board:Board
     
     func _init(d:Dictionary):
@@ -43,6 +44,7 @@ class BoardReport:
            self.PipeMovementAnimations = d.get("PipeMovementAnimations", [])
         
         self.MaximumAnimationTime = d.get("MaximumAnimationTime", 0)
+        self.IsNewBoard = d.get("IsNewBoard", false)
         self.board = Board.new(d.get("Board"))
         
     func get_destroyed_pipes() -> Array:
@@ -56,6 +58,9 @@ class BoardReport:
         
     func get_board() -> Board:
         return self.board
+        
+    func is_new_board() -> bool:
+        return self.IsNewBoard
     
 class Board:
     var cells:Array
