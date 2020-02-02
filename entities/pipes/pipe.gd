@@ -9,7 +9,7 @@ var pipe_line_texture = preload("res://entities/pipes/assets/pipe_line_0.png")
 
 
 enum Direction {UP = 0, DOWN = 180, RIGHT = 90, LEFT = 270}
-enum PipeColor {Color_0 = 0, Color_1 = 1, Color_2 = 2, Color_3 = 3}
+enum PipeColor {Color_0 = 0, Color_1 = 1, Color_2 = 2, Color_3 = 3, COLOR_INVALID = 4}
 
 
 export (int) var speed
@@ -18,6 +18,7 @@ export (Color) var pipe_color_0
 export (Color) var pipe_color_1
 export (Color) var pipe_color_2
 export (Color) var pipe_color_3
+export (Color) var pipe_color_invalid
 
 signal pipe_moving
 signal pipe_stop
@@ -81,6 +82,8 @@ func set_pipeColor(pipeColor: int):
              get_node("Sprite").modulate = pipe_color_2
         PipeColor.Color_3: 
              get_node("Sprite").modulate = pipe_color_3
+        PipeColor.COLOR_INVALID:
+             get_node("Sprite").modulate = pipe_color_invalid
     
     
 func set_direction(direction):   
@@ -112,16 +115,3 @@ func _physics_process(delta):
             emit_signal("pipe_stop")
             position = destination
             velocity = Vector2()
-            
-#Rotates the Pipe in a clockwise direciton 90 degrees
-func rotate_pipe():
-    match direction:
-        Direction.UP:
-            set_direction(Direction.RIGHT)
-        Direction.RIGHT:
-            set_direction(Direction.DOWN)
-        Direction.DOWN:
-            set_direction(Direction.LEFT)
-        Direction.LEFT:
-            set_direction(Direction.UP)
-        

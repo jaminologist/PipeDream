@@ -41,8 +41,6 @@ func _notification(notif):
         get_tree().change_scene("res://scenes/main_menu.tscn")
         
 func poll_client_and_update():
-    
-    
     client.poll()
     
     if client.get_connection_status() == client.CONNECTION_DISCONNECTED:
@@ -55,8 +53,8 @@ func poll_client_and_update():
         json as Dictionary
         response = BlitzGameResponse.new(json)
             
-        client_json_reader.use_json_from_server_for_grid(response, $Grid)
-        client_json_reader.use_json_from_server(response)
+        client_json_reader.set_board_reports(response, $Grid)
+        client_json_reader.set_time_limit_and_score(response)
         
         if response.isOver():
             open_score_screen()
@@ -66,7 +64,7 @@ func update_time_counter_text(time_limit):
     time_display.convert_time_to_label_text_and_set_text(time_limit)
     
 func open_score_screen():
-    $Grid.set_process(false)
+    $Grid.set_touchable(false)
     $VictoryCenterContainer.show()
     $VictoryCenterContainer/PanelContainer/VBoxContainer/VictoryScoreLabel.text = str(score_label.get_score())
     

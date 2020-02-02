@@ -71,8 +71,8 @@ func poll_client_and_update():
     if json != null:
         json as Dictionary
         var response = BlitzGameResponse.new(json)
-        client_json_reader.use_json_from_server_for_grid(response, $Grid)
-        client_json_reader.use_json_from_server(response)
+        client_json_reader.set_board_reports(response, $Grid)
+        client_json_reader.set_time_limit_and_score(response)
         
         if response.isOver():
             
@@ -92,7 +92,7 @@ func poll_client_and_update():
             
             enemyJson as Dictionary
             var enemyResponse = BlitzGameResponse.new(enemyJson)
-            client_json_reader.use_json_from_server_for_grid(enemyResponse, rivalGrid)
+            client_json_reader.set_board_reports(enemyResponse, rivalGrid)
             if enemyResponse.get_score() != 0:
                 set_enemy_score(enemyResponse.get_score())
 
