@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -19,6 +20,7 @@ type BoardReport struct {
 	PipeMovementAnimations []PipeMovementAnimation
 	MaximumAnimationTime   time.Duration
 	Board                  *Board
+	IsNewBoard             bool
 }
 
 type Point struct {
@@ -103,6 +105,29 @@ func newPipe(x int, y int, pipeType PipeType, pipeDirection PipeDirection) Pipe 
 	}
 }
 
+//InsertPipe inserts a pipe of given type and direction into the board, replaces pipe if one does not exist
+func (b *Board) InsertPipe(x int, y int, pipeType PipeType, pipeDirection PipeDirection) error {
+	if b.containsPoint(&Point{x, y}) {
+		pipe := newPipe(x, y, pipeType, pipeDirection)
+		b.Cells[x][y] = &pipe
+		return nil
+	}
+	return fmt.Errorf("Pipe can not be inserted into, (%d, %d) position does not exist on board", x, y)
+}
+
+//IsEmpty checks if a board has no pipes inside of it
+func (b *Board) IsEmpty() bool {
+	for x := 0; x < len(b.Cells); x++ {
+		for y := 0; y < len(b.Cells[x]); y++ {
+			if b.Cells[x][y] != nil {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+//CopyBoard returns a copy of the given board
 func CopyBoard(b *Board) Board {
 
 	newBoard := NewEmptyBoard(b.NumberOfColumns, b.NumberOfRows)
@@ -110,12 +135,15 @@ func CopyBoard(b *Board) Board {
 	for x := 0; x < b.NumberOfColumns; x++ {
 		for y := 0; y < b.NumberOfRows; y++ {
 			pipe := b.Cells[x][y]
-			newBoard.Cells[x][y] = &Pipe{
-				Type:      pipe.Type,
-				Direction: pipe.Direction,
-				Level:     pipe.Level,
-				X:         pipe.X,
-				Y:         pipe.Y,
+			//TODO: DECIDE IF YOU WANT TO CREATE AN 'EMPTY' PIPE TYPE
+			if b.Cells[x][y] != nil {
+				newBoard.Cells[x][y] = &Pipe{
+					Type:      pipe.Type,
+					Direction: pipe.Direction,
+					Level:     pipe.Level,
+					X:         pipe.X,
+					Y:         pipe.Y,
+				}
 			}
 		}
 	}
@@ -125,7 +153,7 @@ func CopyBoard(b *Board) Board {
 
 //RotatePipeClockwise Rotates the pipe at the given x and y clockwise if the board contains the given x and y
 func (b *Board) RotatePipeClockwise(x int, y int) {
-	if b.containsPoint(&Point{x, y}) {
+	if b.containsPoint(&Point{x, y}) && b.Cells[x][y] != nil {
 		b.Cells[x][y].RotateClockWise()
 	}
 }
@@ -152,8 +180,50 @@ func (b *Board) UpdateBoardPipeConnections() []BoardReport {
 		//add in explosive pipes
 		b.addSpecialPipesToBoardUsingClosedTrees(closedTrees)
 
+		//drop pipes that are above a gap
+		boardReport.PipeMovementAnimations, boardReport.MaximumAnimationTime = b.dropFloatingPipes()
+
 		//add in new pipes into the empty slots
-		boardReport.PipeMovementAnimations, boardReport.MaximumAnimationTime = b.addMissingPipesToBoard()
+		pipeMovementAnimations, maxAnimationTime := b.addMissingPipesToBoard()
+
+		boardReport.PipeMovementAnimations = append(boardReport.PipeMovementAnimations, pipeMovementAnimations...)
+
+		if boardReport.MaximumAnimationTime < maxAnimationTime {
+			boardReport.MaximumAnimationTime = maxAnimationTime
+		}
+
+		copyBoard := CopyBoard(b)
+		boardReport.Board = &copyBoard
+
+		boardReports = append(boardReports, boardReport)
+	}
+
+	return boardReports
+}
+
+func (b *Board) UpdateBoardPipeConnectionsButNoNewPipes() []BoardReport {
+
+	connectionFound := true
+
+	boardReports := make([]BoardReport, 0, 0)
+
+	for connectionFound {
+
+		boardReport := BoardReport{}
+
+		closedTrees := b.findAllClosedPipeTrees()
+
+		connectionFound = len(closedTrees) > 0
+		//func calculatenewpositionsforexplosivespipes (as well as the exploding pipes)
+		//delete pipes
+		boardReport.DestroyedPipes = b.deletePipeTreesFromBoard(closedTrees)
+
+		//add in explosive pipes
+		//b.addSpecialPipesToBoardUsingClosedTrees(closedTrees)
+
+		//drop pipes that are above a gap
+		boardReport.PipeMovementAnimations, boardReport.MaximumAnimationTime = b.dropFloatingPipes()
+
 		//return if the number of connects was larger than zero
 
 		copyBoard := CopyBoard(b)
@@ -180,6 +250,12 @@ func (b *Board) findAllClosedPipeTrees() []*pipeTree {
 			}
 
 			visitedPoints[Point{x, y}] = true
+
+			//TODO: DECIDE IF YOU WANT AN EMPTY PIPE TYPE
+			if b.Cells[x][y] == nil {
+				continue
+			}
+
 			rootPipeTree := newPipeTree(b.Cells[x][y], x, y)
 
 			isClosedTree := traversePipeTreeToCheckForClosedConnection(&rootPipeTree, visitedPoints, b)
@@ -315,8 +391,8 @@ func getTravelTime(i int) time.Duration {
 	return time.Duration(i) * (time.Millisecond * 100)
 }
 
-func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementAnimation, maximumTime time.Duration) {
-
+//Used to move pipes that are floating above a gap towards the ground
+func (b *Board) dropFloatingPipes() (pipeMovementAnimations []PipeMovementAnimation, maximumTime time.Duration) {
 	pipeMovementAnimations = make([]PipeMovementAnimation, 0, 0)
 	//Lowers Pipes above a Gap
 	for x := 0; x < len(b.Cells); x++ {
@@ -355,6 +431,12 @@ func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementA
 			}
 		}
 	}
+	return
+}
+
+func (b *Board) addMissingPipesToBoard() (pipeMovementAnimations []PipeMovementAnimation, maximumTime time.Duration) {
+
+	pipeMovementAnimations = make([]PipeMovementAnimation, 0, 0)
 
 	//Fills all Gaps, assumes once a gap is found the rest is also empty
 	for x := 0; x < len(b.Cells); x++ {
@@ -496,6 +578,10 @@ func (p *Pipe) RotateClockWise() {
 
 //PointsTo Returns which x and y this pipe points to from the give x and y
 func (p *Pipe) pointsTo() []Point {
+
+	if p == nil {
+		return []Point{}
+	}
 
 	currentPoint := Point{p.X, p.Y}
 
