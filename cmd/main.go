@@ -21,42 +21,29 @@ func main() {
 
 	flag.Parse()
 
-	if *environment == productionEnvironment {
+	switch *environment {
+	case productionEnvironment:
 		fmt.Println("Production Environment on 5080...")
-
-		/*mux := http.NewServeMux()
-		mux.Handle("/", http.FileServer(http.Dir("./static")))
-
-		certManager := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			Cache:      autocert.DirCache("/certs"),
-			HostPolicy: autocert.HostWhitelist("www.wthpd.com"),
-		}
-		server := &http.Server{
-			Addr:    ":443",
-			Handler: mux,
-			TLSConfig: &tls.Config{
-				GetCertificate: certManager.GetCertificate,
-			},
-		}*/
-
 		fmt.Println("Listening on 5080...with TLS")
-		server := multiplayer.NewServer()
-		go server.Run()
-		http.HandleFunc("/singlePlayerBlitzGame", server.CreateSinglePlayerSession)
-		http.HandleFunc("/versusBlitzGame", server.FindTwoPlayerSession)
-		http.HandleFunc("/aiBlitzGame", server.FindAISession)
-		http.HandleFunc("/versusAiBlitzGame", server.FindVersusAISession)
+		startup()
 		log.Fatal(http.ListenAndServeTLS(":5080", "", "", nil))
-
-	} else {
+	default:
 		fmt.Println("Listening on 5080...")
-		server := multiplayer.NewServer()
-		go server.Run()
-		http.HandleFunc("/singlePlayerBlitzGame", server.CreateSinglePlayerSession)
-		http.HandleFunc("/versusBlitzGame", server.FindTwoPlayerSession)
-		http.HandleFunc("/aiBlitzGame", server.FindAISession)
-		http.HandleFunc("/versusAiBlitzGame", server.FindVersusAISession)
+		startup()
 		log.Fatal(http.ListenAndServe(":5080", nil))
 	}
+}
+
+func startup() {
+	server := multiplayer.NewServer()
+	go server.Run()
+	addRoutes(server)
+}
+
+func addRoutes(s *multiplayer.Server) {
+	http.HandleFunc("/singlePlayerBlitzGame", s.CreateSinglePlayerSession)
+	http.HandleFunc("/versusBlitzGame", s.FindTwoPlayerSession)
+	http.HandleFunc("/aiBlitzGame", s.FindAISession)
+	http.HandleFunc("/versusAiBlitzGame", s.FindVersusAISession)
+	http.HandleFunc("/tutorialGame", s.FindTutorialSession)
 }

@@ -17,6 +17,7 @@ type Server struct {
 	aiBlitzPlayerRegister chan *player.Player
 	twoPlayerRegister     chan *player.Player
 	versusAIRegister      chan *player.Player
+	tutortialRegister     chan *player.Player
 
 	unregister chan *player.Player
 
@@ -24,6 +25,7 @@ type Server struct {
 	playersInLobby         map[*player.Player]bool
 }
 
+//NewServer Creates a new PipeDream server that handles the regsitering of all players to different game modes
 func NewServer() *Server {
 	versusLobbyManager := NewVersusLobbyManager()
 	go versusLobbyManager.Run()
@@ -34,6 +36,7 @@ func NewServer() *Server {
 		aiBlitzPlayerRegister:  make(chan *player.Player),
 		twoPlayerRegister:      make(chan *player.Player),
 		versusAIRegister:       make(chan *player.Player),
+		tutortialRegister:      make(chan *player.Player),
 		unregister:             make(chan *player.Player),
 		playersLookingForLobby: make([]*player.Player, 0),
 		playersInLobby:         make(map[*player.Player]bool),
@@ -41,9 +44,7 @@ func NewServer() *Server {
 
 }
 
-//CreateSinglePlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for a singleplayer session
-func (s *Server) CreateSinglePlayerSession(w http.ResponseWriter, r *http.Request) {
-
+func registerPlayer(w http.ResponseWriter, r *http.Request, registerCh chan *player.Player) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -53,57 +54,37 @@ func (s *Server) CreateSinglePlayerSession(w http.ResponseWriter, r *http.Reques
 	}
 
 	newPlayer := player.NewPlayer(conn)
-	s.singlePlayerRegister <- newPlayer
+	registerCh <- newPlayer
+}
+
+//CreateSinglePlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for a singleplayer session
+func (s *Server) CreateSinglePlayerSession(w http.ResponseWriter, r *http.Request) {
+	registerPlayer(w, r, s.singlePlayerRegister)
 	log.Println("Created Single Player Session")
 }
 
 //FindTwoPlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for finding a two player mutiplayer session
 func (s *Server) FindTwoPlayerSession(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool {
-		return true
-	}
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	newPlayer := player.NewPlayer(conn)
-	s.twoPlayerRegister <- newPlayer
+	registerPlayer(w, r, s.twoPlayerRegister)
 	log.Println("Created Two Player Versus Session")
 }
 
+//FindAISession registers player for AI Blitz Game
 func (s *Server) FindAISession(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool {
-		return true
-	}
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	newPlayer := player.NewPlayer(conn)
-	s.aiBlitzPlayerRegister <- newPlayer
+	registerPlayer(w, r, s.aiBlitzPlayerRegister)
 	log.Println("Created AI Player Session")
 }
 
+//FindVersusAISession registers player for Versus AI Game
 func (s *Server) FindVersusAISession(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool {
-		return true
-	}
-
-	conn, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	newPlayer := player.NewPlayer(conn)
-	s.versusAIRegister <- newPlayer
+	registerPlayer(w, r, s.versusAIRegister)
 	log.Println("Created Versus AI Player Session")
+}
+
+//FindTutorialSession creates a tutorial session for a player
+func (s *Server) FindTutorialSession(w http.ResponseWriter, r *http.Request) {
+	registerPlayer(w, r, s.tutortialRegister)
+	log.Println("Created Tutorial Player Session")
 }
 
 //Run starts the Server. The server handles putting players into lobbies and starting their games
@@ -115,6 +96,10 @@ func (s *Server) Run() {
 			var singlePlayerLobby = lobby.NewSinglePlayerLobby()
 			singlePlayerLobby.AddPlayer(newSinglePlayer)
 			go singlePlayerLobby.Run()
+		case newTutorialPlayer := <-s.tutortialRegister:
+			var tutorialLobby = lobby.NewTutorialLobby()
+			tutorialLobby.AddPlayer(newTutorialPlayer)
+			go tutorialLobby.Run()
 		case newAiBlitzPlayer := <-s.aiBlitzPlayerRegister:
 			var aiPlayerLobby = lobby.NewAIBlitzLobby()
 			aiPlayerLobby.AddPlayer(newAiBlitzPlayer)
