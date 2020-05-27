@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://assets/fonts/roboto_black.tres" type="DynamicFont" id=1]
+[ext_resource path="res://scenes/score_number.gd" type="Script" id=2]
+
+[node name="Score_Number_Label" type="Label"]
+margin_top = 45.0
+margin_right = 238.0
+margin_bottom = 86.0
+custom_fonts/font = ExtResource( 1 )
+text = "0"
+align = 1
+valign = 1
+script = ExtResource( 2 )

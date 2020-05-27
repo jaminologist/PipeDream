@@ -1,0 +1,52 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://scenes/play.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scenes/tutorial.gd" type="Script" id=2]
+[ext_resource path="res://assets/fonts/roboto_black.tres" type="DynamicFont" id=3]
+
+[node name="Tutorial" instance=ExtResource( 1 )]
+script = ExtResource( 2 )
+
+[node name="VBoxContainer" parent="." index="2"]
+editor/display_folded = false
+
+[node name="TitleContainer" parent="VBoxContainer" index="0"]
+margin_bottom = 86.0
+
+[node name="Label" parent="VBoxContainer/TitleContainer" index="0"]
+text = "Tutorial"
+
+[node name="Description" type="Label" parent="VBoxContainer/TitleContainer" index="1"]
+margin_top = 45.0
+margin_right = 480.0
+margin_bottom = 86.0
+custom_fonts/font = ExtResource( 3 )
+text = "Create a closed circuit"
+align = 1
+valign = 1
+
+[node name="VBoxScoreTimeContainer" parent="VBoxContainer" index="1"]
+editor/display_folded = true
+visible = false
+
+[node name="Label" parent="VictoryCenterContainer/PanelContainer/VBoxContainer" index="0"]
+margin_top = 126.0
+margin_bottom = 167.0
+text = "Tutorial Complete"
+
+[node name="Label2" parent="VictoryCenterContainer/PanelContainer/VBoxContainer" index="1"]
+visible = false
+
+[node name="VictoryScoreLabel" parent="VictoryCenterContainer/PanelContainer/VBoxContainer" index="2"]
+visible = false
+margin_top = 123.0
+margin_bottom = 164.0
+
+[node name="RetryButton" parent="VictoryCenterContainer/PanelContainer/VBoxContainer" index="3"]
+visible = false
+margin_top = 148.0
+margin_bottom = 195.0
+
+[node name="MainMenuButton" parent="VictoryCenterContainer/PanelContainer/VBoxContainer" index="4"]
+margin_top = 177.0
+margin_bottom = 224.0
