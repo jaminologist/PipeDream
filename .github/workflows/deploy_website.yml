@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - 'client/**'
-      - 'website/**'
+      - 'client/godot/**'
+      - 'client/website/**'
 
 jobs:
   build:
@@ -19,26 +19,26 @@ jobs:
       run: "docker rm -f pipedream-godot-client || true"
     - name: Build PipeDream Godot Client in client folder
       run: "docker build -t pipedream-godot-client ."
-      working-directory: ./client
+      working-directory: ./client/godot
     - name: Create temporary export container
       run: "docker create --name temporary-export-container pipedream-godot-client"
-      working-directory: ./client
+      working-directory: ./client/godot
     - name: Export HTML5 Game from temporary container
       run: "docker cp temporary-export-container:/pipedream-godot-client/exports ."
-      working-directory: ./client
+      working-directory: ./client/godot
     - name: Removed temporary container
       run: "docker rm temporary-export-container"
     - name: Remove all contents from static website Directory
       run: "rm ./static/*"
-      working-directory: ./website
+      working-directory: ./client/website
     - name: Copy contents of export directory into static directory
-      run: "cp -a ./client/exports/. ./website/static"
+      run: "cp -a ./client/godot/exports/. ./client/website/static"
     - name: Remove PipeDream Website Image, if exists
       run: "docker rm -f pipedream-website || true"
     - name: Build PipeDream Website Image
       run: "docker build -t pipedream-website ."
-      working-directory: ./website
+      working-directory: ./client/website
     - name: Run PipeDream Website Image at port 17000
       run: "docker run -p 17000:17000 -d --name pipedream-website pipedream-website"
-      working-directory: ./website
+      working-directory: ./client/website
       
