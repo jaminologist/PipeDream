@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"bryjamin.com/multiplayer"
+	"github.com/bryjammin/pipedream/lobby/multiplayer"
 )
 
 const (

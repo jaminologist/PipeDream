@@ -3,8 +3,8 @@ package model_test
 import (
 	"testing"
 
-	"bryjamin.com/multiplayer/game/model"
-	"bryjamin.com/pkg"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
+	"github.com/bryjammin/pipedream/lobby/pkg"
 )
 
 func TestBoardSolve(t *testing.T) {

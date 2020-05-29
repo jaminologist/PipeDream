@@ -3,9 +3,9 @@ package game
 import (
 	"time"
 
-	"bryjamin.com/multiplayer/game/model"
-	"bryjamin.com/multiplayer/player"
-	"bryjamin.com/multiplayer/send"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/player"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/send"
 )
 
 type VersusPlayerBlitzGame struct {

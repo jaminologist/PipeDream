@@ -1,6 +1,6 @@
 package game
 
-import "bryjamin.com/multiplayer/game/model"
+import "github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
 
 func calculateScoreFromBoardReports(boardReports []model.BoardReport) int {
 

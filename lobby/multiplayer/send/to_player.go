@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"bryjamin.com/multiplayer/message"
-	"bryjamin.com/multiplayer/player"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/player"
 	"github.com/gorilla/websocket"
 )
 

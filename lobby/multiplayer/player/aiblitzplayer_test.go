@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"bryjamin.com/multiplayer/game/model"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
 )
 
 func TestAIBlitzPlayer_WriteMessage(t *testing.T) {

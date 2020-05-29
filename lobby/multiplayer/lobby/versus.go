@@ -6,10 +6,10 @@ import (
 	"log"
 	"time"
 
-	"bryjamin.com/multiplayer/game"
-	"bryjamin.com/multiplayer/message"
-	"bryjamin.com/multiplayer/player"
-	"bryjamin.com/multiplayer/send"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/player"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/send"
 )
 
 type VersusLobby struct {

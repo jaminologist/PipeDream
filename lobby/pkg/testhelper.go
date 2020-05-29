@@ -1,6 +1,6 @@
 package pkg
 
-import "bryjamin.com/multiplayer/game/model"
+import "github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
 
 //CreateTestBoard Allows you to create a board in a human readable fashion for easier testing
 func CreateTestBoard(numberOfColumns int, numberOfRows int, rowsTopToBottom ...[]*model.Pipe) model.Board {

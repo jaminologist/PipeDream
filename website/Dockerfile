@@ -1,12 +1,7 @@
-FROM golang:1.13 as build-env
+FROM golang:1.14.3 as build-env
 
 RUN mkdir /pipedream-website
 WORKDIR /pipedream-website
-
-COPY go.mod .
-COPY go.sum .
-
-RUN go mod download
 
 COPY cmd cmd
 COPY static static

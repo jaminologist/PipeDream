@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"bryjamin.com/multiplayer/game/model"
-	"bryjamin.com/pkg"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
+	"github.com/bryjammin/pipedream/lobby/pkg"
 )
 
 func TestBoard_UpdateBoardPipeConnections3x3(t *testing.T) {

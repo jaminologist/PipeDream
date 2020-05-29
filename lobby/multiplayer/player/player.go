@@ -3,7 +3,7 @@ package player
 import (
 	"log"
 
-	"bryjamin.com/multiplayer/message"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
 )
 
 type Player struct {

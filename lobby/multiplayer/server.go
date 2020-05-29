@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"bryjamin.com/multiplayer/lobby"
-	"bryjamin.com/multiplayer/player"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/lobby"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/player"
 	"github.com/gorilla/websocket"
 )
 

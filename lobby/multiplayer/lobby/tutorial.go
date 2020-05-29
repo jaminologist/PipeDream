@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"bryjamin.com/multiplayer/game"
-	"bryjamin.com/multiplayer/message"
-	"bryjamin.com/multiplayer/player"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/player"
 )
 
 type TutorialLobby struct {

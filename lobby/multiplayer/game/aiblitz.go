@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"bryjamin.com/multiplayer/game/model"
-	"bryjamin.com/multiplayer/message"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
 )
 
 type AIBlitzGame struct {

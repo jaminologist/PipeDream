@@ -3,7 +3,7 @@ package multiplayer
 import (
 	"testing"
 
-	"bryjamin.com/multiplayer/player"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/player"
 )
 
 func TestServer_Run(t *testing.T) {

@@ -1,9 +1,9 @@
 package game
 
 import (
-	"bryjamin.com/multiplayer/game/model"
-	"bryjamin.com/multiplayer/message"
-	"bryjamin.com/multiplayer/send"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/send"
 )
 
 //TutorialGame Displays a tutorial to a player

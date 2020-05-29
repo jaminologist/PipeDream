@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"bryjamin.com/multiplayer/game"
-	"bryjamin.com/multiplayer/message"
-	"bryjamin.com/multiplayer/player"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/player"
 )
 
 const SINGLEPLAYERBLITZGAMETIMELIMIT = 90

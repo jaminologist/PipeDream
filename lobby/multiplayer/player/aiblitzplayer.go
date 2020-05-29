@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"bryjamin.com/multiplayer/game/model"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
 )
 
 //AIPlayer Used to mock a player and fill spaces for waiting players
