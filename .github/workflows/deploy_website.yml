@@ -28,8 +28,8 @@ jobs:
       working-directory: ./client
     - name: Removed temporary container
       run: "docker rm temporary-export-container"
-    - name: Create static directory in website folder
-      run: "mkdir static"
+    - name: Remove all contents from static website Directory
+      run: "rm ./static/*"
       working-directory: ./website
     - name: Copy contents of export directory into static directory
       run: "cp -a ./client/exports/. ./website/static"
