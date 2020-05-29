@@ -1,15 +1,13 @@
-name: Deploy Website Service With HTML5 Game
+name: Deploy Website
 
 on: 
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
-  repository_dispatch:
-    types: deploy
-        
+    paths:
+      - 'client/**'
+      - 'website/**'
+
 jobs:
   build:
 
@@ -17,12 +15,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with: 
-        repository: Bryjamin/PipeDream-Godot-Client
-        token: ${{ secrets.GITHUB_PAT }}
-        path: client
     - name: Remove Godot Client Image, if exists
-      run:  "docker rm -f pipedream-godot-client || true"
+      run: "docker rm -f pipedream-godot-client || true"
     - name: Build PipeDream Godot Client in client folder
       run: "docker build -t pipedream-godot-client ."
       working-directory: ./client
@@ -34,12 +28,7 @@ jobs:
       working-directory: ./client
     - name: Removed temporary container
       run: "docker rm temporary-export-container"
-    - uses: actions/checkout@v2
-      with: 
-        path: website
-    - name: List Directory
-      run: "ls -l"
-    - name: Remove all contents from static Directory
+    - name: Remove all contents from static website Directory
       run: "rm ./static/*"
       working-directory: ./website
     - name: Copy contents of export directory into static directory
@@ -52,3 +41,4 @@ jobs:
     - name: Run PipeDream Website Image at port 17000
       run: "docker run -p 17000:17000 -d --name pipedream-website pipedream-website"
       working-directory: ./website
+      
