@@ -14,11 +14,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Remove Image, if exists
-      run: "docker rm -f pipedream_lobby_service || true"
-      working-directory: ./lobby
     - name: Build Image
       run: "docker build -t pipedream_lobby_service ."
+      working-directory: ./lobby
+    - name: Remove Running Image, if exists
+      run: "docker rm -f pipedream_lobby_service || true"
       working-directory: ./lobby
     - name: Run Image
       run: "docker run -p 5080:5080 -d --name pipedream_lobby_service pipedream_lobby_service"
