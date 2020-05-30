@@ -2,7 +2,6 @@ package lobby
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 
@@ -84,7 +83,6 @@ func (lobby *VersusLobby) Run() {
 		player.PlayerMessageReceiver = lobby
 		players[i] = player
 		i++
-		fmt.Println(i)
 	}
 
 	lobby.game = game.NewVersusPlayerBlitzGame(SINGLEPLAYERBLITZGAMETIMELIMIT*time.Second, players, lobby.lobbyToPlayerMessageCh, lobby.playerToLobbyMessageCh)

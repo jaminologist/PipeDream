@@ -32,7 +32,6 @@ func (m *MockConn) WriteMessage(messageType int, data []byte) error {
 
 func TestVersusLobbyManager_handleNewPlayer(t *testing.T) {
 	type args struct {
-		//p *Player
 		numberOfPlayersToAdd int
 	}
 	type expected struct {
@@ -40,8 +39,7 @@ func TestVersusLobbyManager_handleNewPlayer(t *testing.T) {
 		numberOfClosedLobbies int
 	}
 	tests := []struct {
-		name string
-		//vlm      *VersusLobbyManager
+		name     string
 		args     args
 		expected expected
 	}{

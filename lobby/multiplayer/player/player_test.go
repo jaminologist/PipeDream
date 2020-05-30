@@ -56,17 +56,17 @@ func TestNewPlayer(t *testing.T) {
 func TestPlayer_run(t *testing.T) {
 	tests := []struct {
 		name    string
-		p       *Player
+		p       *ManualPlayerRunner
 		wantErr bool
 	}{
 		{name: "When ReadMessage errors this should return an error",
-			p: &Player{Conn: &MockConn{returnError: true}}, wantErr: true},
+			p: &ManualPlayerRunner{Player: &Player{Conn: &MockConn{returnError: true}}}, wantErr: true},
 		{name: "When ReadMessage does not error this should not return an error",
-			p: &Player{Conn: &MockConn{returnError: false}}, wantErr: false},
+			p: &ManualPlayerRunner{&Player{Conn: &MockConn{returnError: false}}}, wantErr: false},
 		{name: "When PlayerRegister is not nil and ReadMessage returns an error this should return an error",
-			p: &Player{Conn: &MockConn{returnError: true}, PlayerRegister: &MockPlayerRegister{}}, wantErr: true},
+			p: &ManualPlayerRunner{&Player{Conn: &MockConn{returnError: true}, PlayerRegister: &MockPlayerRegister{}}}, wantErr: true},
 		{name: "When PlayerMessageReceiver is not nil this should not return an error",
-			p: &Player{Conn: &MockConn{returnError: false}, PlayerMessageReceiver: &MockPlayerMessageReceiver{}}, wantErr: false},
+			p: &ManualPlayerRunner{&Player{Conn: &MockConn{returnError: false}, PlayerMessageReceiver: &MockPlayerMessageReceiver{}}}, wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
