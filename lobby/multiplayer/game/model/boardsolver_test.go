@@ -9,52 +9,52 @@ import (
 
 func TestBoardSolve(t *testing.T) {
 
-	simpleTestBoard := pkg.CreateTestBoard(1, 2, []*model.Pipe{&model.Pipe{Type: model.END, Direction: model.UP}},
-		[]*model.Pipe{&model.Pipe{Type: model.END, Direction: model.DOWN}})
+	simpleTestBoard := pkg.CreateTestBoard(1, 2, []*model.Pipe{{Type: model.END, Direction: model.UP}},
+		[]*model.Pipe{{Type: model.END, Direction: model.DOWN}})
 
 	infiniteLoopTestBoard := pkg.CreateTestBoard(4, 4,
 		[]*model.Pipe{
-			&model.Pipe{Type: model.LPIPE, Direction: model.LEFT},
-			&model.Pipe{Type: model.LPIPE, Direction: model.UP},
-			&model.Pipe{Type: model.LINE, Direction: model.UP},
-			&model.Pipe{Type: model.LINE, Direction: model.DOWN}},
+			{Type: model.LPIPE, Direction: model.LEFT},
+			{Type: model.LPIPE, Direction: model.UP},
+			{Type: model.LINE, Direction: model.UP},
+			{Type: model.LINE, Direction: model.DOWN}},
 		[]*model.Pipe{
-			&model.Pipe{Type: model.END, Direction: model.UP},
-			&model.Pipe{Type: model.END, Direction: model.UP},
-			&model.Pipe{Type: model.LPIPE, Direction: model.LEFT},
-			&model.Pipe{Type: model.END, Direction: model.DOWN}},
+			{Type: model.END, Direction: model.UP},
+			{Type: model.END, Direction: model.UP},
+			{Type: model.LPIPE, Direction: model.LEFT},
+			{Type: model.END, Direction: model.DOWN}},
 		[]*model.Pipe{
-			&model.Pipe{Type: model.LPIPE, Direction: model.RIGHT},
-			&model.Pipe{Type: model.END, Direction: model.UP},
-			&model.Pipe{Type: model.LPIPE, Direction: model.LEFT},
-			&model.Pipe{Type: model.LPIPE, Direction: model.LEFT}},
+			{Type: model.LPIPE, Direction: model.RIGHT},
+			{Type: model.END, Direction: model.UP},
+			{Type: model.LPIPE, Direction: model.LEFT},
+			{Type: model.LPIPE, Direction: model.LEFT}},
 		[]*model.Pipe{
-			&model.Pipe{Type: model.LPIPE, Direction: model.UP},
-			&model.Pipe{Type: model.LPIPE, Direction: model.LEFT},
-			&model.Pipe{Type: model.END, Direction: model.DOWN},
-			&model.Pipe{Type: model.END, Direction: model.DOWN}})
+			{Type: model.LPIPE, Direction: model.UP},
+			{Type: model.LPIPE, Direction: model.LEFT},
+			{Type: model.END, Direction: model.DOWN},
+			{Type: model.END, Direction: model.DOWN}})
 
 	infiniteLoopTestBoard2 := pkg.CreateTestBoard(4, 4,
 		[]*model.Pipe{
-			&model.Pipe{Type: model.LPIPE, Direction: model.RIGHT},
-			&model.Pipe{Type: model.LPIPE, Direction: model.RIGHT},
-			&model.Pipe{Type: model.END, Direction: model.LEFT},
-			&model.Pipe{Type: model.LPIPE, Direction: model.RIGHT}},
+			{Type: model.LPIPE, Direction: model.RIGHT},
+			{Type: model.LPIPE, Direction: model.RIGHT},
+			{Type: model.END, Direction: model.LEFT},
+			{Type: model.LPIPE, Direction: model.RIGHT}},
 		[]*model.Pipe{
-			&model.Pipe{Type: model.LPIPE, Direction: model.RIGHT},
-			&model.Pipe{Type: model.LINE, Direction: model.UP},
-			&model.Pipe{Type: model.LPIPE, Direction: model.DOWN},
-			&model.Pipe{Type: model.END, Direction: model.UP}},
+			{Type: model.LPIPE, Direction: model.RIGHT},
+			{Type: model.LINE, Direction: model.UP},
+			{Type: model.LPIPE, Direction: model.DOWN},
+			{Type: model.END, Direction: model.UP}},
 		[]*model.Pipe{
-			&model.Pipe{Type: model.LPIPE, Direction: model.RIGHT},
-			&model.Pipe{Type: model.LPIPE, Direction: model.DOWN},
-			&model.Pipe{Type: model.END, Direction: model.DOWN},
-			&model.Pipe{Type: model.LPIPE, Direction: model.RIGHT}},
+			{Type: model.LPIPE, Direction: model.RIGHT},
+			{Type: model.LPIPE, Direction: model.DOWN},
+			{Type: model.END, Direction: model.DOWN},
+			{Type: model.LPIPE, Direction: model.RIGHT}},
 		[]*model.Pipe{
-			&model.Pipe{Type: model.LPIPE, Direction: model.UP},
-			&model.Pipe{Type: model.END, Direction: model.RIGHT},
-			&model.Pipe{Type: model.END, Direction: model.DOWN},
-			&model.Pipe{Type: model.LPIPE, Direction: model.DOWN}})
+			{Type: model.LPIPE, Direction: model.UP},
+			{Type: model.END, Direction: model.RIGHT},
+			{Type: model.END, Direction: model.DOWN},
+			{Type: model.LPIPE, Direction: model.DOWN}})
 
 	type args struct {
 		b *model.Board
@@ -68,22 +68,19 @@ func TestBoardSolve(t *testing.T) {
 		{
 			name:    "Let's see how to goes",
 			args:    args{b: &simpleTestBoard},
-			want:    []*model.Point{&model.Point{0, 0}, &model.Point{0, 0}, &model.Point{0, 1}, &model.Point{0, 1}},
+			want:    []*model.Point{{0, 0}, {0, 0}, {0, 1}, {0, 1}},
 			wantErr: false,
 		},
 		{
-			name: "L Pipe 3-part loop that points to end piece, but is a child pipe",
-			args: args{b: &infiniteLoopTestBoard},
-			want: []*model.Point{&model.Point{0, 1}, &model.Point{0, 1}, &model.Point{0, 1},
-				&model.Point{1, 1}, &model.Point{1, 1}, &model.Point{1, 1}, &model.Point{0, 2}, &model.Point{0, 2}},
+			name:    "L Pipe 3-part loop that points to end piece, but is a child pipe",
+			args:    args{b: &infiniteLoopTestBoard},
+			want:    []*model.Point{{0, 1}, {0, 1}, {0, 1}, {1, 1}, {1, 1}, {1, 1}, {0, 2}, {0, 2}},
 			wantErr: false,
 		},
 		{
-			name: "L Pipe 3-part loop that points to end piece, but is a root pipe",
-			args: args{b: &infiniteLoopTestBoard2},
-			want: []*model.Point{&model.Point{0, 1}, &model.Point{0, 1}, &model.Point{0, 1},
-				&model.Point{1, 0}, &model.Point{1, 0}, &model.Point{1, 0}, &model.Point{1, 2}, &model.Point{2, 1},
-				&model.Point{2, 1}},
+			name:    "L Pipe 3-part loop that points to end piece, but is a root pipe",
+			args:    args{b: &infiniteLoopTestBoard2},
+			want:    []*model.Point{{0, 1}, {0, 1}, {0, 1}, {1, 0}, {1, 0}, {1, 0}, {1, 2}, {2, 1}, {2, 1}},
 			wantErr: false,
 		},
 	}
