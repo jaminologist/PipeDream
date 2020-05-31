@@ -23,10 +23,18 @@ type Server struct {
 
 	playersLookingForLobby []*player.Player
 	playersInLobby         map[*player.Player]bool
+
+	upgrader *websocket.Upgrader
 }
 
 //NewServer Creates a new PipeDream server that handles the regsitering of all players to different game modes
 func NewServer() *Server {
+
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+
 	versusLobbyManager := NewVersusLobbyManager()
 	go versusLobbyManager.Run()
 
@@ -40,14 +48,15 @@ func NewServer() *Server {
 		unregister:             make(chan *player.Player),
 		playersLookingForLobby: make([]*player.Player, 0),
 		playersInLobby:         make(map[*player.Player]bool),
+		upgrader:               &upgrader,
 	}
 
 }
 
-func registerPlayer(w http.ResponseWriter, r *http.Request, registerCh chan *player.Player) {
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+func (s *Server) registerPlayer(w http.ResponseWriter, r *http.Request, registerCh chan *player.Player) {
+	s.upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := s.upgrader.Upgrade(w, r, nil)
 
 	if err != nil {
 		log.Println(err)
@@ -59,31 +68,31 @@ func registerPlayer(w http.ResponseWriter, r *http.Request, registerCh chan *pla
 
 //CreateSinglePlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for a singleplayer session
 func (s *Server) CreateSinglePlayerSession(w http.ResponseWriter, r *http.Request) {
-	registerPlayer(w, r, s.singlePlayerRegister)
+	s.registerPlayer(w, r, s.singlePlayerRegister)
 	log.Println("Created Single Player Session")
 }
 
 //FindTwoPlayerSession Creates a new WebSocket Connection with the Multiplayer server and Registers the player for finding a two player mutiplayer session
 func (s *Server) FindTwoPlayerSession(w http.ResponseWriter, r *http.Request) {
-	registerPlayer(w, r, s.twoPlayerRegister)
+	s.registerPlayer(w, r, s.twoPlayerRegister)
 	log.Println("Created Two Player Versus Session")
 }
 
 //FindAISession registers player for AI Blitz Game
 func (s *Server) FindAISession(w http.ResponseWriter, r *http.Request) {
-	registerPlayer(w, r, s.aiBlitzPlayerRegister)
+	s.registerPlayer(w, r, s.aiBlitzPlayerRegister)
 	log.Println("Created AI Player Session")
 }
 
 //FindVersusAISession registers player for Versus AI Game
 func (s *Server) FindVersusAISession(w http.ResponseWriter, r *http.Request) {
-	registerPlayer(w, r, s.versusAIRegister)
+	s.registerPlayer(w, r, s.versusAIRegister)
 	log.Println("Created Versus AI Player Session")
 }
 
 //FindTutorialSession creates a tutorial session for a player
 func (s *Server) FindTutorialSession(w http.ResponseWriter, r *http.Request) {
-	registerPlayer(w, r, s.tutortialRegister)
+	s.registerPlayer(w, r, s.tutortialRegister)
 	log.Println("Created Tutorial Player Session")
 }
 
@@ -118,11 +127,6 @@ func (s *Server) Run() {
 			go aiVersusLobby.Run()
 		}
 	}
-}
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
 }
 
 type VersusLobbyManager struct {
@@ -197,12 +201,8 @@ func (vlm *VersusLobbyManager) Run() {
 					log.Print("Removed Open Lobby, Address: ", unregisteringLobby)
 				}
 			}
-		default:
 		}
 	}
-
-	log.Println("Stopping Versus Lobby Manager...")
-
 }
 
 func (vlm *VersusLobbyManager) handleNewPlayer(p *player.Player) {
