@@ -68,9 +68,7 @@ func NewVersusPlayerBlitzGame(timeLimit time.Duration, players []*player.Player,
 		timeLimit:                  timeLimit,
 		sendMessageToPlayerCh:      sendMessageToPlayerCh,
 		receiveMessageFromPlayerCh: receiveMessageFromPlayerCh,
-		//TODO This is an overly large buffered channel to avoid a race condition since send player board input is synchronise and in versus
-		//A player sends a message to both players.
-		playerInputChannel: make(chan *player.PlayerBoardInput, 100),
+		playerInputChannel:         make(chan *player.PlayerBoardInput),
 
 		gameOverInputChannel: make(chan bool),
 	}
