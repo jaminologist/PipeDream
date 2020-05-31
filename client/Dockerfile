@@ -4,7 +4,7 @@ RUN mkdir /pipedream-godot-client
 # Create exports folder. In Godot 3.1.1, if a folder does not exist it can not be exported to
 RUN mkdir /pipedream-godot-client/exports
 WORKDIR /pipedream-godot-client
-COPY . /pipedream-godot-client 
+COPY godot /pipedream-godot-client 
 
 #EXPORT HTML5 GAME USING "HTML5" TEMPLATE
 RUN godot --export "HTML5" "/pipedream-godot-client/exports/index.html"
