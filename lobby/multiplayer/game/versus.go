@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/bryjammin/pipedream/lobby/multiplayer/game/model"
+	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
 	"github.com/bryjammin/pipedream/lobby/multiplayer/player"
 	"github.com/bryjammin/pipedream/lobby/multiplayer/send"
 )
@@ -16,7 +17,7 @@ type VersusPlayerBlitzGame struct {
 	sendMessageToPlayerCh      chan *player.PlayerMessage
 	receiveMessageFromPlayerCh chan *player.PlayerMessage
 
-	playerInputChannel   chan *player.PlayerBoardInput
+	playerInputChannel   chan *PlayerBoardInput
 	gameOverInputChannel chan bool
 }
 
@@ -46,6 +47,11 @@ type VPBlitzGameState struct {
 	TimeLimit         *model.TimeLimit
 }
 
+type PlayerBoardInput struct {
+	Player *player.Player
+	message.BoardInput
+}
+
 func NewVersusPlayerBlitzGame(timeLimit time.Duration, players []*player.Player, sendMessageToPlayerCh chan *player.PlayerMessage, receiveMessageFromPlayerCh chan *player.PlayerMessage) *VersusPlayerBlitzGame {
 
 	playerGameInformation := make(map[*player.Player](*VersusPlayerBlitzGamePlayerInformation))
@@ -68,7 +74,7 @@ func NewVersusPlayerBlitzGame(timeLimit time.Duration, players []*player.Player,
 		timeLimit:                  timeLimit,
 		sendMessageToPlayerCh:      sendMessageToPlayerCh,
 		receiveMessageFromPlayerCh: receiveMessageFromPlayerCh,
-		playerInputChannel:         make(chan *player.PlayerBoardInput),
+		playerInputChannel:         make(chan *PlayerBoardInput),
 
 		gameOverInputChannel: make(chan bool),
 	}
@@ -188,6 +194,6 @@ func (vpbg *VersusPlayerBlitzGame) getOpponent(p *player.Player) *player.Player 
 	return nil
 }
 
-func (vpbg *VersusPlayerBlitzGame) SendPlayerBoardInputToGame(pbi *player.PlayerBoardInput) {
+func (vpbg *VersusPlayerBlitzGame) SendPlayerBoardInputToGame(pbi *PlayerBoardInput) {
 	vpbg.playerInputChannel <- pbi
 }

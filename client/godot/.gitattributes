@@ -1,6 +1,22 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-#Added because Godot seems to switch to CRLF when opened on windows so git picks up these line ending changes.
-#This could be incorrect but this was my thinking at the time
-* text eol=lf
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.cpp text
+*.h text
+*.gd text
+*.tscn text
+*.import text
+*.godot text
+*.md text
+*.py text
+*.sh text
+
+# Declare files that will always have CRLF line endings on checkout.
+*.sln text eol=crlf
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary

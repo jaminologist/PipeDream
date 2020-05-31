@@ -1,4 +1,4 @@
-FROM ioribranford/godot-docker as godot
+FROM barichello/godot-ci as godot
 RUN mkdir /pipedream-godot-client
 
 # Create exports folder. In Godot 3.1.1, if a folder does not exist it can not be exported to

@@ -2,8 +2,6 @@ package player
 
 import (
 	"log"
-
-	"github.com/bryjammin/pipedream/lobby/multiplayer/message"
 )
 
 type Player struct {
@@ -18,11 +16,6 @@ type PlayerMessage struct {
 	MessageType int
 	Message     []byte
 	Player      *Player
-}
-
-type PlayerBoardInput struct {
-	Player *Player
-	message.BoardInput
 }
 
 type Conn interface {
