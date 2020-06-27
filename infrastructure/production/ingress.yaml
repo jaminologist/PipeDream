@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+  name: pipedreamlobbyingress
+spec:
+  tls:
+  - hosts:
+    - server.wthpd.com
+    secretName: pipedream-cert
+  rules:
+  - host: server.wthpd.com
+    http:
+      paths:
+      - backend:
+          serviceName: pipedreamlobbyservice
+          servicePort: 80
+  - host: server.wthpd.local.com
+    http:
+      paths:
+      - backend:
+          serviceName: pipedreamlobbyservice
+          servicePort: 80
+
+---
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+  name: pipedreamwebsiteingress
+spec:
+  tls:
+  - hosts:
+    - wthpd.com
+    - www.wthpd.com
+    secretName: pipedream-cert
+  rules:
+  - host: wthpd.com
+    http:
+      paths:
+      - backend:
+          serviceName: pipedreamwebsiteservice
+          servicePort: 80
+  - host: www.wthpd.com
+    http:
+      paths:
+      - backend:
+          serviceName: pipedreamwebsiteservice
+          servicePort: 80
+  - host: wthpd.local.com
+    http:
+      paths:
+      - backend:
+          serviceName: pipedreamwebsiteservice
+          servicePort: 80

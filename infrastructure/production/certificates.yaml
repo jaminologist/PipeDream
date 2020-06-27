@@ -1,0 +1,36 @@
+
+
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - selector: {}
+      http01:
+        ingress:
+          class: nginx
+    
+
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: pipedream-cert
+spec:
+  secretName: pipedream-cert
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  commonName: wthpd.com
+  dnsNames:
+  - wthpd.com
+  - www.wthpd.com
+  - server.wthpd.com
+  

@@ -1,0 +1,38 @@
+---
+
+apiVersion: v1  
+kind: Service
+metadata:
+  name: pipedreamwebsiteservice
+spec:
+  selector:
+    app: pipedreamwebsite
+  ports:
+    - protocol: "TCP"
+      port: 80
+      targetPort: 17000
+      nodePort: 30003
+  type: LoadBalancer  
+     
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipedreamwebsite
+spec:
+  selector:
+    matchLabels:
+      app: pipedreamwebsite
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app: pipedreamwebsite
+    spec:
+      containers:
+        - name: pipedream-website
+          image: pipedream-website
+          imagePullPolicy: Never 
+          ports:
+            - containerPort: 17000
