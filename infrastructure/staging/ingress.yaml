@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+  name: pipedreamingressstaging
+spec:
+  tls:
+  - hosts:
+    - staging.wthpd.com
+    - server-staging.wthpd.com
+    secretName: pipedream-cert
+  rules:
+  - host: staging.wthpd.com
+    http:
+      paths:
+      - backend:
+          serviceName: pipedreamwebsiteservice
+          servicePort: 80
+  - host: server-staging.wthpd.com
+    http:
+      paths:
+      - backend:
+          serviceName: pipedreamlobbyservice
+          servicePort: 80
