@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
         - name: pipedream-lobby
-          image: pipedream-lobby
+          image: pipedream-lobby:1.0
           imagePullPolicy: Never 
           ports:
             - containerPort: 5080

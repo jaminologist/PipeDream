@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: pipedream-website
-          image: pipedream-website
+          image: pipedream-website:1.0
           imagePullPolicy: Never 
           ports:
             - containerPort: 17000
