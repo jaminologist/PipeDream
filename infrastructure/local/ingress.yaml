@@ -4,13 +4,13 @@ metadata:
   name: pipedreamingresslocal
 spec:
   rules:
-  - host: local.wthpd.com
+  - host: staging.wthpd.com
     http:
       paths:
       - backend:
           serviceName: pipedreamwebsiteservice
           servicePort: 80
-  - host: server-local.wthpd.com
+  - host: server-staging.wthpd.com
     http:
       paths:
       - backend:
